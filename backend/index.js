@@ -1,6 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
+//Connect products route to server
+const productRoutes = require('./routes/products');
 
 const db = require('./config/db');
 
@@ -8,6 +10,8 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+
+app.use('/api/products', productRoutes);
 
 // Test DB connection
 db.query('SELECT 1', (err) => {
