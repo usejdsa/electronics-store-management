@@ -60,3 +60,13 @@ UNLOCK TABLES;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
 -- Dump completed on 2026-04-19  0:10:28
+
+
+CREATE TABLE Categories (
+  id INT NOT NULL AUTO_INCREMENT,
+  emertimi VARCHAR(255) NOT NULL,
+  pershkrimi TEXT,
+  kategoria_prind_id INT DEFAULT NULL,
+  ikona VARCHAR(255),
+  PRIMARY KEY (id)
+);
