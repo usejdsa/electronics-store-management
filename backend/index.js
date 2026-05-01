@@ -4,6 +4,7 @@ require('dotenv').config();
 //Connect products route to server
 const productRoutes = require('./routes/products');
 const categoriesRoute = require("./routes/categories");
+const customersRoute = require("./routes/customers")
 
 const db = require('./config/db');
 
@@ -14,6 +15,7 @@ app.use(express.json());
 
 app.use('/api/products', productRoutes);
 app.use("/api/categories", categoriesRoute);
+app.use("/api/customers", customersRoute);
 
 // Test DB connection
 db.query('SELECT 1', (err) => {
