@@ -3,6 +3,8 @@ import Categories from './components/Categories';
 import Customers from "./components/Customers";
 import Orders from './components/Orders';
 import OrderDetails from './components/OrderDetails';
+import Suppliers from './components/Suppliers';
+import PurchaseOrders from './components/PurchaseOrders';
 
 function App() {
   return (
@@ -17,6 +19,10 @@ function App() {
       <Orders/>
 
       <OrderDetails/>
+
+      <Suppliers />
+      
+      <PurchaseOrders />
     </div>
   );
 }
