@@ -9,11 +9,11 @@ const ordersRoute = require("./routes/orders");
 const orderDetailsRoute = require("./routes/orderDetails");
 const suppliersRoutes = require("./routes/suppliers");
 const purchaseOrdersRoutes = require("./routes/purchaseOrders");
+const inventoryRoute = require("./routes/inventory");
 
 const db = require('./config/db');
 
 const app = express();
-
 
 app.use(cors({
   origin: "http://localhost:5173"
@@ -28,6 +28,7 @@ app.use("/api/customers", customersRoute);
 app.use("/api/order-details", orderDetailsRoute);
 app.use("/api/suppliers", suppliersRoutes);
 app.use("/api/purchase-orders", purchaseOrdersRoutes);
+app.use("/api/inventory", inventoryRoute);
 
 
 // Test DB connection

@@ -49,9 +49,17 @@ router.delete("/:id", (req, res) => {
 
 // UPDATE
 router.put("/:id", (req, res) => {
-  const { supplier_id, product_id, sasia, cmimi_blerjes, statusi } = req.body;
+  let { supplier_id, product_id, sasia, cmimi_blerjes, statusi } = req.body;
+
+  // FORCE values
+  supplier_id = supplier_id ? Number(supplier_id) : null;
+  product_id = product_id ? Number(product_id) : null;
+  sasia = sasia ? Number(sasia) : 0;
+  cmimi_blerjes = cmimi_blerjes ? Number(cmimi_blerjes) : 0;
 
   const totali = sasia * cmimi_blerjes;
+
+  if (!statusi) statusi = "draft";
 
   const sql = `
     UPDATE PurchaseOrders
@@ -62,8 +70,12 @@ router.put("/:id", (req, res) => {
   db.query(
     sql,
     [supplier_id, product_id, sasia, cmimi_blerjes, totali, statusi, req.params.id],
-    (err) => {
-      if (err) return res.status(500).json(err);
+    (err, result) => {
+      if (err) {
+        console.log("❌ UPDATE ERROR:", err.sqlMessage);
+        return res.status(500).json(err);
+      }
+
       res.json({ message: "Updated" });
     }
   );

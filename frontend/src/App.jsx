@@ -5,6 +5,7 @@ import Orders from './components/Orders';
 import OrderDetails from './components/OrderDetails';
 import Suppliers from './components/Suppliers';
 import PurchaseOrders from './components/PurchaseOrders';
+import Inventory from './components/Inventory';
 
 function App() {
   return (
@@ -23,6 +24,8 @@ function App() {
       <Suppliers />
       
       <PurchaseOrders />
+
+      <Inventory/>
     </div>
   );
 }
