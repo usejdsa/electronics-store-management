@@ -1,6 +1,8 @@
 import Products from './components/Products';
 import Categories from './components/Categories';
 import Customers from "./components/Customers";
+import Orders from './components/Orders';
+import OrderDetails from './components/OrderDetails';
 
 function App() {
   return (
@@ -11,6 +13,10 @@ function App() {
       <Categories />
 
       <Customers />
+
+      <Orders/>
+
+      <OrderDetails/>
     </div>
   );
 }

@@ -1,21 +1,30 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
-//Connect products route to server
+//Connect routes to server
 const productRoutes = require('./routes/products');
 const categoriesRoute = require("./routes/categories");
 const customersRoute = require("./routes/customers")
+const ordersRoute = require("./routes/orders");
+const orderDetailsRoute = require("./routes/orderDetails");
 
 const db = require('./config/db');
 
 const app = express();
 
-app.use(cors());
+
+app.use(cors({
+  origin: "http://localhost:5173"
+}));
+
 app.use(express.json());
 
+app.use("/api/orders", ordersRoute);
 app.use('/api/products', productRoutes);
 app.use("/api/categories", categoriesRoute);
 app.use("/api/customers", customersRoute);
+app.use("/api/order-details", orderDetailsRoute);
+
 
 // Test DB connection
 db.query('SELECT 1', (err) => {

@@ -77,7 +77,9 @@ function Products() {
           value={cmimi}
           onChange={(e) => setCmimi(e.target.value)}
         />
-        <button type="submit">Add Product</button>
+        <button type="submit">
+          {editId ? "Update Product" : "Add Product"}
+        </button>
       </form>
 
       {/* LIST */}

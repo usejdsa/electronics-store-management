@@ -54,4 +54,21 @@ router.put("/:id", (req, res) => {
   );
 });
 
+//UPDATE
+router.put('/:id', (req, res) => {
+  const { id } = req.params;
+  const { emri, mbiemri, email, telefoni, adresa, qyteti } = req.body;
+
+  db.query(
+    `UPDATE Customers 
+     SET emri = ?, mbiemri = ?, email = ?, telefoni = ?, adresa = ?, qyteti = ?
+     WHERE id = ?`,
+    [emri, mbiemri, email, telefoni, adresa, qyteti, id],
+    (err, result) => {
+      if (err) return res.status(500).json(err);
+      res.json({ message: "Customer updated" });
+    }
+  );
+});
+
 module.exports = router;
