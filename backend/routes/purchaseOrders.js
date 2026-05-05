@@ -1,84 +1,83 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const db = require("../config/db");
+const db = require('../config/db');
+const verifyToken = require('../middleware/auth');
+const checkRole = require('../middleware/checkRole');
 
-// GET all purchase orders
-router.get("/", (req, res) => {
+router.get('/', verifyToken, checkRole(['Admin']), (req, res) => {
   const sql = `
-    SELECT po.*, s.emri_kompanise, p.emri AS product_name
+    SELECT po.*, s.emri_kompanise, p.emri AS produkt_emri
     FROM PurchaseOrders po
-    JOIN Suppliers s ON po.supplier_id = s.id
-    JOIN Products p ON po.product_id = p.id
+    LEFT JOIN Suppliers s ON po.supplier_id = s.id
+    LEFT JOIN Products p ON po.product_id = p.id
+    ORDER BY po.created_at DESC
   `;
-
   db.query(sql, (err, result) => {
-    if (err) return res.status(500).json(err);
+    if (err) return res.status(500).json({ message: 'DB error', error: err });
     res.json(result);
   });
 });
 
-// POST create purchase order
-router.post("/", (req, res) => {
-  const { supplier_id, user_id, product_id, sasia, cmimi_blerjes } = req.body;
+router.post('/', verifyToken, checkRole(['Admin']), (req, res) => {
+  const { supplier_id, product_id, sasia, cmimi_blerjes, data_porosis, data_arritjes, shenime } = req.body;
+
+  if (!supplier_id || !product_id || !sasia || !cmimi_blerjes) {
+    return res.status(400).json({ message: 'supplier_id, product_id, sasia dhe cmimi_blerjes jane te detyrueshme.' });
+  }
 
   const totali = sasia * cmimi_blerjes;
 
-  const sql = `
-    INSERT INTO PurchaseOrders 
-    (supplier_id, user_id, product_id, sasia, cmimi_blerjes, totali)
-    VALUES (?, ?, ?, ?, ?, ?)
-  `;
-
   db.query(
-    sql,
-    [supplier_id, user_id, product_id, sasia, cmimi_blerjes, totali],
+    'INSERT INTO PurchaseOrders (supplier_id, user_id, product_id, sasia, cmimi_blerjes, totali, data_porosis, data_arritjes, shenime) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    [supplier_id, req.user.id, product_id, sasia, cmimi_blerjes, totali, data_porosis || null, data_arritjes || null, shenime || null],
     (err, result) => {
-      if (err) return res.status(500).json(err);
-      res.json({ message: "Purchase Order created", id: result.insertId });
+      if (err) return res.status(500).json({ message: 'DB error', error: err });
+      res.status(201).json({ message: 'PurchaseOrder u shtua.', id: result.insertId, totali });
     }
   );
 });
 
-// DELETE
-router.delete("/:id", (req, res) => {
-  db.query("DELETE FROM PurchaseOrders WHERE id=?", [req.params.id], (err) => {
-    if (err) return res.status(500).json(err);
-    res.json({ message: "Deleted" });
+// PUT statusi — kur arrin malli, rritet stoku automatikisht
+router.put('/:id/status', verifyToken, checkRole(['Admin']), (req, res) => {
+  const { statusi } = req.body;
+  const validStatuses = ['draft', 'ordered', 'received', 'cancelled'];
+
+  if (!validStatuses.includes(statusi)) {
+    return res.status(400).json({ message: 'Status i pavlefshëm.' });
+  }
+
+  db.query('SELECT * FROM PurchaseOrders WHERE id = ?', [req.params.id], (err, result) => {
+    if (err) return res.status(500).json({ message: 'DB error', error: err });
+    if (result.length === 0) return res.status(404).json({ message: 'PurchaseOrder nuk u gjet.' });
+
+    const po = result[0];
+
+    db.query('UPDATE PurchaseOrders SET statusi = ? WHERE id = ?', [statusi, req.params.id], (err) => {
+      if (err) return res.status(500).json({ message: 'DB error', error: err });
+
+      // Nëse statusi bëhet 'received' — rriti stokun automatikisht
+      if (statusi === 'received' && po.statusi !== 'received') {
+        db.query(
+          'UPDATE Products SET sasia_stokut = sasia_stokut + ? WHERE id = ?',
+          [po.sasia, po.product_id]
+        );
+        db.query(
+          'INSERT INTO Inventory (product_id, lloji, sasia, referenca_lloji, referenca_id, user_id) VALUES (?, "hyrje", ?, "PurchaseOrder", ?, ?)',
+          [po.product_id, po.sasia, po.id, req.user.id]
+        );
+      }
+
+      res.json({ message: 'Statusi u përditësua.' });
+    });
   });
 });
 
-// UPDATE
-router.put("/:id", (req, res) => {
-  let { supplier_id, product_id, sasia, cmimi_blerjes, statusi } = req.body;
-
-  // FORCE values
-  supplier_id = supplier_id ? Number(supplier_id) : null;
-  product_id = product_id ? Number(product_id) : null;
-  sasia = sasia ? Number(sasia) : 0;
-  cmimi_blerjes = cmimi_blerjes ? Number(cmimi_blerjes) : 0;
-
-  const totali = sasia * cmimi_blerjes;
-
-  if (!statusi) statusi = "draft";
-
-  const sql = `
-    UPDATE PurchaseOrders
-    SET supplier_id=?, product_id=?, sasia=?, cmimi_blerjes=?, totali=?, statusi=?
-    WHERE id=?
-  `;
-
-  db.query(
-    sql,
-    [supplier_id, product_id, sasia, cmimi_blerjes, totali, statusi, req.params.id],
-    (err, result) => {
-      if (err) {
-        console.log("❌ UPDATE ERROR:", err.sqlMessage);
-        return res.status(500).json(err);
-      }
-
-      res.json({ message: "Updated" });
-    }
-  );
+router.delete('/:id', verifyToken, checkRole(['Admin']), (req, res) => {
+  db.query('DELETE FROM PurchaseOrders WHERE id = ?', [req.params.id], (err, result) => {
+    if (err) return res.status(500).json({ message: 'DB error', error: err });
+    if (result.affectedRows === 0) return res.status(404).json({ message: 'PurchaseOrder nuk u gjet.' });
+    res.json({ message: 'PurchaseOrder u fshi.' });
+  });
 });
 
 module.exports = router;

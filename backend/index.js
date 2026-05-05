@@ -1,7 +1,10 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
+
 //Connect routes to server
+const authRoutes = require('./routes/auth');
+const storeRoutes = require('./routes/store');
 const productRoutes = require('./routes/products');
 const categoriesRoute = require("./routes/categories");
 const customersRoute = require("./routes/customers")
@@ -10,6 +13,7 @@ const orderDetailsRoute = require("./routes/orderDetails");
 const suppliersRoutes = require("./routes/suppliers");
 const purchaseOrdersRoutes = require("./routes/purchaseOrders");
 const inventoryRoute = require("./routes/inventory");
+const customerPortalRoutes = require('./routes/customerPortal');
 
 const db = require('./config/db');
 
@@ -21,6 +25,11 @@ app.use(cors({
 
 app.use(express.json());
 
+// ── Public routes (nuk kërkojnë token) ──
+app.use('/api/auth', authRoutes);
+app.use('/api/store', storeRoutes);
+ 
+// ── Protected routes (kërkojnë token) ──
 app.use("/api/orders", ordersRoute);
 app.use('/api/products', productRoutes);
 app.use("/api/categories", categoriesRoute);
@@ -29,6 +38,7 @@ app.use("/api/order-details", orderDetailsRoute);
 app.use("/api/suppliers", suppliersRoutes);
 app.use("/api/purchase-orders", purchaseOrdersRoutes);
 app.use("/api/inventory", inventoryRoute);
+app.use('/api/customer', customerPortalRoutes);
 
 
 // Test DB connection

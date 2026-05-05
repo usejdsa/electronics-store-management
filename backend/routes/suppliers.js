@@ -1,51 +1,50 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const db = require("../config/db");
+const db = require('../config/db');
+const verifyToken = require('../middleware/auth');
+const checkRole = require('../middleware/checkRole');
 
-// GET all suppliers
-router.get("/", (req, res) => {
-  db.query("SELECT * FROM Suppliers", (err, result) => {
-    if (err) return res.status(500).json(err);
+router.get('/', verifyToken, checkRole(['Admin']), (req, res) => {
+  db.query('SELECT * FROM Suppliers ORDER BY emri_kompanise', (err, result) => {
+    if (err) return res.status(500).json({ message: 'DB error', error: err });
     res.json(result);
   });
 });
 
-// POST create supplier
-router.post("/", (req, res) => {
+router.post('/', verifyToken, checkRole(['Admin']), (req, res) => {
   const { emri_kompanise, kontakti, email, telefoni, adresa } = req.body;
+  if (!emri_kompanise) return res.status(400).json({ message: 'Emri i kompanisë është i detyrueshëm.' });
 
-  const sql = `
-    INSERT INTO Suppliers (emri_kompanise, kontakti, email, telefoni, adresa)
-    VALUES (?, ?, ?, ?, ?)
-  `;
-
-  db.query(sql, [emri_kompanise, kontakti, email, telefoni, adresa], (err, result) => {
-    if (err) return res.status(500).json(err);
-    res.json({ message: "Supplier added", id: result.insertId });
-  });
+  db.query(
+    'INSERT INTO Suppliers (emri_kompanise, kontakti, email, telefoni, adresa) VALUES (?, ?, ?, ?, ?)',
+    [emri_kompanise, kontakti || null, email || null, telefoni || null, adresa || null],
+    (err, result) => {
+      if (err) return res.status(500).json({ message: 'DB error', error: err });
+      res.status(201).json({ message: 'Furnizuesi u shtua.', id: result.insertId });
+    }
+  );
 });
 
-// DELETE
-router.delete("/:id", (req, res) => {
-  db.query("DELETE FROM Suppliers WHERE id=?", [req.params.id], (err) => {
-    if (err) return res.status(500).json(err);
-    res.json({ message: "Deleted" });
-  });
+router.put('/:id', verifyToken, checkRole(['Admin']), (req, res) => {
+  const { emri_kompanise, kontakti, email, telefoni, adresa } = req.body;
+  if (!emri_kompanise) return res.status(400).json({ message: 'Emri i kompanisë është i detyrueshëm.' });
+
+  db.query(
+    'UPDATE Suppliers SET emri_kompanise = ?, kontakti = ?, email = ?, telefoni = ?, adresa = ? WHERE id = ?',
+    [emri_kompanise, kontakti || null, email || null, telefoni || null, adresa || null, req.params.id],
+    (err, result) => {
+      if (err) return res.status(500).json({ message: 'DB error', error: err });
+      if (result.affectedRows === 0) return res.status(404).json({ message: 'Furnizuesi nuk u gjet.' });
+      res.json({ message: 'Furnizuesi u përditësua.' });
+    }
+  );
 });
 
-// UPDATE
-router.put("/:id", (req, res) => {
-  const { emri_kompanise, kontakti, email, telefoni, adresa } = req.body;
-
-  const sql = `
-    UPDATE Suppliers
-    SET emri_kompanise=?, kontakti=?, email=?, telefoni=?, adresa=?
-    WHERE id=?
-  `;
-
-  db.query(sql, [emri_kompanise, kontakti, email, telefoni, adresa, req.params.id], (err) => {
-    if (err) return res.status(500).json(err);
-    res.json({ message: "Updated" });
+router.delete('/:id', verifyToken, checkRole(['Admin']), (req, res) => {
+  db.query('DELETE FROM Suppliers WHERE id = ?', [req.params.id], (err, result) => {
+    if (err) return res.status(500).json({ message: 'DB error', error: err });
+    if (result.affectedRows === 0) return res.status(404).json({ message: 'Furnizuesi nuk u gjet.' });
+    res.json({ message: 'Furnizuesi u fshi.' });
   });
 });
 
