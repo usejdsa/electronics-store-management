@@ -1,130 +1,57 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
+import { useEffect, useState } from 'react';
+import api from '../api/axios';
+
+const empty = { product_id: '', lloji: 'hyrje', sasia: '', shenime: '' };
 
 function Inventory() {
   const [items, setItems] = useState([]);
   const [products, setProducts] = useState([]);
-  const [editId, setEditId] = useState(null);
-
-  const [form, setForm] = useState({
-    product_id: "",
-    lloji: "hyrje",
-    sasia: "",
-    shenime: ""
-  });
+  const [form, setForm] = useState(empty);
 
   const fetchData = () => {
-    axios.get("http://localhost:5000/api/inventory")
-      .then(res => setItems(res.data));
-
-    axios.get("http://localhost:5000/api/products")
-      .then(res => setProducts(res.data));
+    api.get('/inventory').then(res => setItems(res.data)).catch(console.error);
+    api.get('/products').then(res => setProducts(res.data)).catch(console.error);
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  useEffect(() => { fetchData(); }, []);
 
-  const handleSubmit = () => {
-    const payload = {
-      product_id: Number(form.product_id),
-      lloji: "hyrje",
-      sasia: Number(form.sasia),
-      referenca_lloji: null,
-      referenca_id: null,
-      shenime: form.shenime || "",
-      user_id: null
-    };
+  const set = (field) => (e) => setForm(f => ({ ...f, [field]: e.target.value }));
 
-    console.log("SENDING INVENTORY:", payload);
-
-    if (editId) {
-      axios.put(`http://localhost:5000/api/inventory/${editId}`, payload)
-        .then(() => {
-          setEditId(null);
-          resetForm();
-          fetchData();
-        });
-    } else {
-      axios.post("http://localhost:5000/api/inventory", payload)
-        .then(() => {
-          resetForm();
-          fetchData();
-        });
-    }
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const payload = { product_id: Number(form.product_id), lloji: form.lloji, sasia: Number(form.sasia), shenime: form.shenime || null };
+    api.post('/inventory', payload).then(() => { setForm(empty); fetchData(); }).catch(console.error);
   };
 
-  const resetForm = () => {
-    setForm({
-      product_id: "",
-      lloji: "hyrje",
-      sasia: "",
-      shenime: ""
-    });
-  };
-
-  const deleteItem = (id) => {
-    axios.delete(`http://localhost:5000/api/inventory/${id}`)
-      .then(fetchData);
-  };
+  const llojiBadge = { hyrje: '#dcfce7', dalje: '#fee2e2', rregullim: '#e0e7ff' };
 
   return (
     <div>
       <h2>Inventory</h2>
 
-      {/* PRODUCT SELECT */}
-      <select
-        value={form.product_id}
-        onChange={e => setForm({ ...form, product_id: e.target.value })}
-      >
-        <option value="">Select Product</option>
-        {products.map(p => (
-          <option key={p.id} value={p.id}>
-            {p.emri}
-          </option>
-        ))}
-      </select>
+      <form onSubmit={handleSubmit}>
+        <select required value={form.product_id} onChange={set('product_id')}>
+          <option value="">Select Product *</option>
+          {products.map(p => <option key={p.id} value={p.id}>{p.emri} (stock: {p.sasia_stokut})</option>)}
+        </select>
+        <select value={form.lloji} onChange={set('lloji')}>
+          <option value="hyrje">Hyrje (Stock In)</option>
+          <option value="dalje">Dalje (Stock Out)</option>
+          <option value="rregullim">Rregullim (Adjustment)</option>
+        </select>
+        <input required type="number" placeholder="Quantity *" value={form.sasia} onChange={set('sasia')} />
+        <input placeholder="Notes" value={form.shenime} onChange={set('shenime')} />
+        <button type="submit" className="btn-add">Add Movement</button>
+      </form>
 
-      {/* QUANTITY (NOW sasia) */}
-      <input
-        placeholder="Sasia"
-        value={form.sasia}
-        onChange={e => setForm({ ...form, sasia: e.target.value })}
-      />
-
-      <input
-        placeholder="Notes"
-        value={form.shenime}
-        onChange={e => setForm({ ...form, shenime: e.target.value })}
-      />
-
-      <button onClick={handleSubmit}>
-        {editId ? "Update" : "Add"}
-      </button>
-
-      <ul>
-        {items.map(i => (
-          <li key={i.id}>
-            {i.product_name} - {i.sasia}
-
-            <button onClick={() => {
-              setEditId(i.id);
-              setForm({
-                product_id: i.product_id,
-                lloji: i.lloji,
-                sasia: i.sasia,
-                shenime: i.shenime || ""
-              });
-            }}>
-              Edit
-            </button>
-
-            <button onClick={() => deleteItem(i.id)}>
-              Delete
-            </button>
-          </li>
-        ))}
-      </ul>
+      {items.map(i => (
+        <div key={i.id} className="list-row">
+          <span>
+            <span style={{ background: llojiBadge[i.lloji] || '#f1f5f9', borderRadius: 4, padding: '2px 7px', fontSize: 12, marginRight: 8 }}>{i.lloji}</span>
+            {i.produkt_emri} — qty: {i.sasia} {i.shenime ? `(${i.shenime})` : ''} {i.user_emri ? `· by ${i.user_emri}` : ''}
+          </span>
+        </div>
+      ))}
     </div>
   );
 }

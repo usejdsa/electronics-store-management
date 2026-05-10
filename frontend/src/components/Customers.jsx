@@ -1,112 +1,63 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
+import { useEffect, useState } from 'react';
+import api from '../api/axios';
+
+const empty = { emri: '', mbiemri: '', email: '', telefoni: '', adresa: '', qyteti: '' };
 
 function Customers() {
   const [customers, setCustomers] = useState([]);
-
-  const [emri, setEmri] = useState("");
-  const [mbiemri, setMbiemri] = useState("");
-  const [email, setEmail] = useState("");
-  const [telefoni, setTelefoni] = useState("");
-  const [adresa, setAdresa] = useState("");
-  const [qyteti, setQyteti] = useState("");
-
   const [editId, setEditId] = useState(null);
+  const [form, setForm] = useState(empty);
 
-  // GET
-  const fetchCustomers = () => {
-    axios.get("http://localhost:5000/api/customers")
-      .then(res => setCustomers(res.data))
-      .catch(err => console.log(err));
-  };
+  const fetchCustomers = () => api.get('/customers').then(res => setCustomers(res.data)).catch(console.error);
 
-  useEffect(() => {
-    fetchCustomers();
-  }, []);
+  useEffect(() => { fetchCustomers(); }, []);
 
-  // CREATE / UPDATE
+  const set = (field) => (e) => setForm(f => ({ ...f, [field]: e.target.value }));
+
   const handleSubmit = (e) => {
     e.preventDefault();
-
-    const data = { emri, mbiemri, email, telefoni, adresa, qyteti };
-
-    if (editId) {
-      // UPDATE
-      axios.put(`http://localhost:5000/api/customers/${editId}`, data)
-        .then(() => {
-          setEditId(null);
-          setEmri("");
-          setMbiemri("");
-          setEmail("");
-          setTelefoni("");
-          setAdresa("");
-          setQyteti("");
-          fetchCustomers();
-        })
-        .catch(err => console.log("UPDATE ERROR:", err));
-    } else {
-      // CREATE
-      axios.post("http://localhost:5000/api/customers", data)
-        .then(() => {
-          setEmri("");
-          setMbiemri("");
-          setEmail("");
-          setTelefoni("");
-          setAdresa("");
-          setQyteti("");
-          fetchCustomers();
-        })
-        .catch(err => console.log(err));
-    }
+    const req = editId ? api.put(`/customers/${editId}`, form) : api.post('/customers', form);
+    req.then(() => { setEditId(null); setForm(empty); fetchCustomers(); }).catch(console.error);
   };
 
-  // DELETE
+  const handleEdit = (c) => {
+    setEditId(c.id);
+    setForm({ emri: c.emri || '', mbiemri: c.mbiemri || '', email: c.email || '', telefoni: c.telefoni || '', adresa: c.adresa || '', qyteti: c.qyteti || '' });
+  };
+
   const handleDelete = (id) => {
-    axios.delete(`http://localhost:5000/api/customers/${id}`)
-      .then(() => {
-        setCustomers(prev => prev.filter(c => c.id !== id));
-      })
-      .catch(err => console.log(err));
+    if (!window.confirm('Delete this customer?')) return;
+    api.delete(`/customers/${id}`).then(() => setCustomers(prev => prev.filter(c => c.id !== id))).catch(console.error);
   };
 
   return (
     <div>
       <h2>Customers</h2>
 
-      {/* FORM */}
-      <form onSubmit={handleSubmit}>
-        <input placeholder="Emri" value={emri} onChange={e => setEmri(e.target.value)} />
-        <input placeholder="Mbiemri" value={mbiemri} onChange={e => setMbiemri(e.target.value)} />
-        <input placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} />
-        <input placeholder="Telefoni" value={telefoni} onChange={e => setTelefoni(e.target.value)} />
-        <input placeholder="Adresa" value={adresa} onChange={e => setAdresa(e.target.value)} />
-        <input placeholder="Qyteti" value={qyteti} onChange={e => setQyteti(e.target.value)} />
+      {editId && (
+        <div style={{ background: '#fef3c7', border: '1px solid #f59e0b', borderRadius: 8, padding: '8px 14px', marginBottom: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 13 }}>
+          <span>Editing customer #{editId}</span>
+          <button onClick={() => { setEditId(null); setForm(empty); }} style={{ background: 'none', border: 'none', color: '#92400e', cursor: 'pointer', textDecoration: 'underline' }}>Cancel</button>
+        </div>
+      )}
 
-        <button type="submit">
-          {editId ? "Update Customer" : "Add Customer"}
-        </button>
+      <form onSubmit={handleSubmit}>
+        <input required placeholder="First name *" value={form.emri} onChange={set('emri')} />
+        <input required placeholder="Last name *" value={form.mbiemri} onChange={set('mbiemri')} />
+        <input type="email" placeholder="Email" value={form.email} onChange={set('email')} />
+        <input placeholder="Phone" value={form.telefoni} onChange={set('telefoni')} />
+        <input placeholder="Address" value={form.adresa} onChange={set('adresa')} />
+        <input placeholder="City" value={form.qyteti} onChange={set('qyteti')} />
+        <button type="submit" className="btn-add">{editId ? 'Update Customer' : 'Add Customer'}</button>
       </form>
 
-      {/* LIST */}
       {customers.map(c => (
-        <div key={c.id}>
-          {c.emri} {c.mbiemri}
-
-          <button onClick={() => {
-            setEditId(c.id);
-            setEmri(c.emri);
-            setMbiemri(c.mbiemri);
-            setEmail(c.email);
-            setTelefoni(c.telefoni);
-            setAdresa(c.adresa);
-            setQyteti(c.qyteti);
-          }}>
-            Edit
-          </button>
-
-          <button onClick={() => handleDelete(c.id)}>
-            Delete
-          </button>
+        <div key={c.id} className="list-row">
+          <span>{c.emri} {c.mbiemri} {c.email ? `— ${c.email}` : ''} {c.qyteti ? `· ${c.qyteti}` : ''}</span>
+          <span>
+            <button className="btn-edit" onClick={() => handleEdit(c)}>Edit</button>
+            <button className="btn-delete" onClick={() => handleDelete(c.id)}>Delete</button>
+          </span>
         </div>
       ))}
     </div>

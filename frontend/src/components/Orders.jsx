@@ -1,138 +1,82 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
+import { useEffect, useState } from 'react';
+import api from '../api/axios';
+
+const empty = { customer_id: '', statusi: 'pending', totali: '', shenime: '' };
+const STATUSES = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'];
 
 function Orders() {
   const [orders, setOrders] = useState([]);
-  const [editId, setEditId] = useState(null);
-
-  const [customerId, setCustomerId] = useState("");
   const [customers, setCustomers] = useState([]);
-  const [userId, setUserId] = useState("");
-  const [totali, setTotali] = useState("");
-  const [shenime, setShenime] = useState("");
+  const [editId, setEditId] = useState(null);
+  const [form, setForm] = useState(empty);
 
-
-  // GET
-  const fetchOrders = () => {
-    axios.get("http://localhost:5000/api/orders")
-      .then(res => setOrders(res.data))
-      .catch(err => console.log(err));
-  };
+  const fetchOrders = () => api.get('/orders').then(res => setOrders(res.data)).catch(console.error);
 
   useEffect(() => {
-  fetchOrders();
+    fetchOrders();
+    api.get('/customers').then(res => setCustomers(res.data)).catch(console.error);
+  }, []);
 
-  axios.get("http://localhost:5000/api/customers")
-    .then(res => setCustomers(res.data));
-}, []);
+  const set = (field) => (e) => setForm(f => ({ ...f, [field]: e.target.value }));
 
-  // CREATE + UPDATE
   const handleSubmit = (e) => {
     e.preventDefault();
-
     const payload = {
-      customer_id: Number(customerId),
-      user_id: userId ? Number(userId) : null,
-      statusi: "pending",
-      totali: Number(totali),
-      shenime: shenime
+      customer_id: Number(form.customer_id),
+      statusi: form.statusi,
+      totali: Number(form.totali) || 0,
+      shenime: form.shenime || null,
     };
-
-    if (editId) {
-      // UPDATE
-      axios.put(`http://localhost:5000/api/orders/${editId}`, payload)
-        .then(() => {
-          setEditId(null);
-          setCustomerId("");
-          setUserId("");
-          setTotali("");
-          setShenime("");
-          fetchOrders();
-        })
-        .catch(err => console.log("UPDATE ERROR:", err));
-    } else {
-      // CREATE
-      axios.post("http://localhost:5000/api/orders", payload)
-        .then(() => {
-          setCustomerId("");
-          setUserId("");
-          setTotali("");
-          setShenime("");
-          fetchOrders();
-        })
-        .catch(err => console.log("CREATE ERROR:", err));
-    }
+    const req = editId ? api.put(`/orders/${editId}`, payload) : api.post('/orders', payload);
+    req.then(() => { setEditId(null); setForm(empty); fetchOrders(); }).catch(console.error);
   };
 
-  // DELETE
+  const handleEdit = (o) => {
+    setEditId(o.id);
+    setForm({
+      customer_id: o.customer_id || '',
+      statusi: o.statusi || 'pending',
+      totali: o.totali || '',
+      shenime: o.shenime || '',
+    });
+  };
+
   const handleDelete = (id) => {
-    axios.delete(`http://localhost:5000/api/orders/${id}`)
-      .then(() => fetchOrders())
-      .catch(err => console.log(err));
+    if (!window.confirm('Delete this order?')) return;
+    api.delete(`/orders/${id}`).then(fetchOrders).catch(console.error);
   };
 
   return (
     <div>
       <h2>Orders</h2>
 
-      {/* FORM */}
+      {editId && (
+        <div style={{ background: '#fef3c7', border: '1px solid #f59e0b', borderRadius: 8, padding: '8px 14px', marginBottom: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 13 }}>
+          <span>Editing order #{editId}</span>
+          <button onClick={() => { setEditId(null); setForm(empty); }} style={{ background: 'none', border: 'none', color: '#92400e', cursor: 'pointer', textDecoration: 'underline' }}>Cancel</button>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit}>
-       <select
-            value={customerId}
-            onChange={e => setCustomerId(e.target.value)}>
-            <option value="">Select Customer</option>
-
-            {customers.map(c => (
-                <option key={c.id} value={c.id}>
-                {c.emri} {c.mbiemri}
-                </option>
-            ))}
+        <select required value={form.customer_id} onChange={set('customer_id')}>
+          <option value="">Select Customer *</option>
+          {customers.map(c => <option key={c.id} value={c.id}>{c.emri} {c.mbiemri}</option>)}
         </select>
-
-        <input
-          type="number"
-          placeholder="User ID"
-          value={userId}
-          onChange={(e) => setUserId(e.target.value)}
-        />
-
-        <input
-          type="number"
-          placeholder="Total"
-          value={totali}
-          onChange={(e) => setTotali(e.target.value)}
-        />
-
-        <input
-          type="text"
-          placeholder="Notes"
-          value={shenime}
-          onChange={(e) => setShenime(e.target.value)}
-        />
-
-        <button type="submit">
-          {editId ? "Update Order" : "Add Order"}
-        </button>
+        <select value={form.statusi} onChange={set('statusi')}>
+          {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+        </select>
+        <input type="number" step="0.01" placeholder="Total (totali)" value={form.totali} onChange={set('totali')} />
+        <input placeholder="Notes (shenime)" value={form.shenime} onChange={set('shenime')} />
+        <button type="submit" className="btn-add">{editId ? 'Update Order' : 'Add Order'}</button>
       </form>
 
-      {/* LIST */}
       {orders.map(o => (
-        <div key={o.id}>
-          Order #{o.id} - {o.statusi} - {o.totali}€
-
-          <button onClick={() => {
-            setEditId(o.id);
-            setCustomerId(o.customer_id || "");
-            setUserId(o.user_id || "");
-            setTotali(o.totali || "");
-            setShenime(o.shenime || "");
-          }}>
-            Edit
-          </button>
-
-          <button onClick={() => handleDelete(o.id)}>
-            Delete
-          </button>
+        <div key={o.id} className="list-row">
+          <span>Order #{o.id} — {o.customer_emri} — <strong>{o.statusi}</strong> — {o.totali}€</span>
+          <span>
+            <button className="btn-edit" onClick={() => handleEdit(o)}>Edit</button>
+            <button className="btn-delete" onClick={() => handleDelete(o.id)}>Delete</button>
+          </span>
         </div>
       ))}
     </div>

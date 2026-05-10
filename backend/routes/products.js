@@ -10,7 +10,7 @@ router.get('/', verifyToken, checkRole(['Admin', 'Technician']), (req, res) => {
     SELECT p.*, c.emertimi AS kategoria_emri
     FROM Products p
     LEFT JOIN Categories c ON p.kategoria_id = c.id
-    ORDER BY p.created_at DESC
+    ORDER BY p.id DESC
   `;
   db.query(sql, (err, result) => {
     if (err) return res.status(500).json({ message: 'DB error', error: err });

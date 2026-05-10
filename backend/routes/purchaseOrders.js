@@ -37,7 +37,36 @@ router.post('/', verifyToken, checkRole(['Admin']), (req, res) => {
   );
 });
 
-// PUT statusi — kur arrin malli, rritet stoku automatikisht
+// PUT full update — only allowed if not yet received
+router.put('/:id', verifyToken, checkRole(['Admin']), (req, res) => {
+  const { supplier_id, product_id, sasia, cmimi_blerjes, shenime } = req.body;
+
+  if (!supplier_id || !product_id || !sasia || !cmimi_blerjes) {
+    return res.status(400).json({ message: 'supplier_id, product_id, sasia dhe cmimi_blerjes jane te detyrueshme.' });
+  }
+
+  // Don't allow editing a received order — stock has already been adjusted
+  db.query('SELECT statusi FROM PurchaseOrders WHERE id = ?', [req.params.id], (err, result) => {
+    if (err) return res.status(500).json({ message: 'DB error', error: err });
+    if (result.length === 0) return res.status(404).json({ message: 'PurchaseOrder nuk u gjet.' });
+    if (result[0].statusi === 'received') {
+      return res.status(400).json({ message: 'Nuk mund të ndryshohet një porosi e marrë.' });
+    }
+
+    const totali = sasia * cmimi_blerjes;
+
+    db.query(
+      'UPDATE PurchaseOrders SET supplier_id = ?, product_id = ?, sasia = ?, cmimi_blerjes = ?, totali = ?, shenime = ? WHERE id = ?',
+      [supplier_id, product_id, sasia, cmimi_blerjes, totali, shenime || null, req.params.id],
+      (err, result) => {
+        if (err) return res.status(500).json({ message: 'DB error', error: err });
+        res.json({ message: 'PurchaseOrder u përditësua.', totali });
+      }
+    );
+  });
+});
+
+// PUT statusi — when received, auto-increment stock
 router.put('/:id/status', verifyToken, checkRole(['Admin']), (req, res) => {
   const { statusi } = req.body;
   const validStatuses = ['draft', 'ordered', 'received', 'cancelled'];
@@ -55,7 +84,6 @@ router.put('/:id/status', verifyToken, checkRole(['Admin']), (req, res) => {
     db.query('UPDATE PurchaseOrders SET statusi = ? WHERE id = ?', [statusi, req.params.id], (err) => {
       if (err) return res.status(500).json({ message: 'DB error', error: err });
 
-      // Nëse statusi bëhet 'received' — rriti stokun automatikisht
       if (statusi === 'received' && po.statusi !== 'received') {
         db.query(
           'UPDATE Products SET sasia_stokut = sasia_stokut + ? WHERE id = ?',
