@@ -1,293 +1,524 @@
--- ============================================================
--- Electronics Store Management System (EMS)
--- Database Schema - v2
--- 15 Tabela
--- ============================================================
+-- MySQL dump 10.13  Distrib 8.0.45, for Win64 (x86_64)
+--
+-- Host: localhost    Database: electronics_store
+-- ------------------------------------------------------
+-- Server version	8.0.45
 
-CREATE DATABASE IF NOT EXISTS `electronics_store`
-  DEFAULT CHARACTER SET utf8mb4
-  COLLATE utf8mb4_general_ci;
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!50503 SET NAMES utf8 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
-USE `electronics_store`;
+--
+-- Table structure for table `auditlogs`
+--
 
-SET FOREIGN_KEY_CHECKS = 0;
-
--- ============================================================
--- 1. IDENTITY SYSTEM
--- ============================================================
-
-CREATE TABLE IF NOT EXISTS `Roles` (
-  `id`          INT           NOT NULL AUTO_INCREMENT,
-  `emertimi`    VARCHAR(50)   NOT NULL,   -- Admin, Technician, Cashier
-  `pershkrimi`  VARCHAR(255)      NULL,
-  `created_at`  DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+DROP TABLE IF EXISTS `auditlogs`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `auditlogs` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int DEFAULT NULL,
+  `veprimi` varchar(100) NOT NULL,
+  `tabela` varchar(100) DEFAULT NULL,
+  `rekord_id` int DEFAULT NULL,
+  `vlera_para` json DEFAULT NULL,
+  `vlera_pas` json DEFAULT NULL,
+  `ip_adresa` varchar(45) DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uq_roles_emertimi` (`emertimi`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  KEY `fk_auditlogs_user` (`user_id`),
+  CONSTRAINT `fk_auditlogs_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
--- ---
-CREATE TABLE IF NOT EXISTS `Users` (
-  `id`             INT           NOT NULL AUTO_INCREMENT,
-  `emri`           VARCHAR(100)  NOT NULL,
-  `mbiemri`        VARCHAR(100)  NOT NULL,
-  `email`          VARCHAR(255)  NOT NULL,
-  `password_hash`  VARCHAR(255)  NOT NULL,
-  `is_active`      TINYINT(1)    NOT NULL DEFAULT 1,
-  `created_at`     DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at`     DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+--
+-- Dumping data for table `auditlogs`
+--
+
+LOCK TABLES `auditlogs` WRITE;
+/*!40000 ALTER TABLE `auditlogs` DISABLE KEYS */;
+/*!40000 ALTER TABLE `auditlogs` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `categories`
+--
+
+DROP TABLE IF EXISTS `categories`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `categories` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `emertimi` varchar(255) NOT NULL,
+  `pershkrimi` text,
+  `kategoria_prind_id` int DEFAULT NULL,
+  `ikona` varchar(255) DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uq_users_email` (`email`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  KEY `fk_categories_parent` (`kategoria_prind_id`),
+  CONSTRAINT `fk_categories_parent` FOREIGN KEY (`kategoria_prind_id`) REFERENCES `categories` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
--- ---
-CREATE TABLE IF NOT EXISTS `UserRoles` (
-  `user_id`     INT       NOT NULL,
-  `role_id`     INT       NOT NULL,
-  `assigned_at` DATETIME  NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`user_id`, `role_id`),
-  CONSTRAINT `fk_userroles_user` FOREIGN KEY (`user_id`) REFERENCES `Users` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `fk_userroles_role` FOREIGN KEY (`role_id`) REFERENCES `Roles` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+--
+-- Dumping data for table `categories`
+--
 
--- ---
-CREATE TABLE IF NOT EXISTS `RefreshTokens` (
-  `id`          INT           NOT NULL AUTO_INCREMENT,
-  `user_id`     INT           NOT NULL,
-  `token`       VARCHAR(512)  NOT NULL,
-  `expires_at`  DATETIME      NOT NULL,
-  `revoked`     TINYINT(1)    NOT NULL DEFAULT 0,
-  `created_at`  DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+LOCK TABLES `categories` WRITE;
+/*!40000 ALTER TABLE `categories` DISABLE KEYS */;
+INSERT INTO `categories` VALUES (1,'Elektronike','Te gjitha produktet elektronike',NULL,NULL,'2026-05-01 22:02:37'),(2,'Telefona','Telefona celulare dhe aksesore',1,NULL,'2026-05-01 22:02:37'),(3,'Laptope','Laptope dhe aksesore',1,NULL,'2026-05-01 22:02:37'),(4,'Gaming','Konzola dhe aksesore gaming',1,NULL,'2026-05-01 22:02:37'),(5,'Audio','Kufje, altoparlante, mikrofona',1,NULL,'2026-05-01 22:02:37'),(6,'Periferike','Mouse, tastiere, monitore',1,NULL,'2026-05-01 22:02:37');
+/*!40000 ALTER TABLE `categories` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `customers`
+--
+
+DROP TABLE IF EXISTS `customers`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `customers` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int DEFAULT NULL,
+  `emri` varchar(100) NOT NULL,
+  `mbiemri` varchar(100) NOT NULL,
+  `email` varchar(255) DEFAULT NULL,
+  `telefoni` varchar(30) DEFAULT NULL,
+  `adresa` varchar(255) DEFAULT NULL,
+  `qyteti` varchar(100) DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_customers_email` (`email`),
+  KEY `fk_customers_user` (`user_id`),
+  CONSTRAINT `fk_customers_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `customers`
+--
+
+LOCK TABLES `customers` WRITE;
+/*!40000 ALTER TABLE `customers` DISABLE KEYS */;
+INSERT INTO `customers` VALUES (10,NULL,'usejd','salihu','23@45','2345','23456','67','2026-05-02 00:45:40');
+/*!40000 ALTER TABLE `customers` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `inventory`
+--
+
+DROP TABLE IF EXISTS `inventory`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `inventory` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `product_id` int NOT NULL,
+  `lloji` enum('hyrje','dalje','rregullim') NOT NULL,
+  `sasia` int NOT NULL,
+  `referenca_lloji` varchar(50) DEFAULT NULL,
+  `referenca_id` int DEFAULT NULL,
+  `shenime` varchar(255) DEFAULT NULL,
+  `user_id` int DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `fk_inventory_product` (`product_id`),
+  KEY `fk_inventory_user` (`user_id`),
+  CONSTRAINT `fk_inventory_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `fk_inventory_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `inventory`
+--
+
+LOCK TABLES `inventory` WRITE;
+/*!40000 ALTER TABLE `inventory` DISABLE KEYS */;
+INSERT INTO `inventory` VALUES (2,12,'hyrje',50,NULL,NULL,'notes',NULL,'2026-05-03 01:49:42'),(3,13,'hyrje',50,'PurchaseOrder',1,NULL,3,'2026-05-10 19:19:48'),(4,14,'dalje',1,'Manual',NULL,'gfhj',3,'2026-05-10 19:20:06');
+/*!40000 ALTER TABLE `inventory` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `orderdetails`
+--
+
+DROP TABLE IF EXISTS `orderdetails`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `orderdetails` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `order_id` int NOT NULL,
+  `product_id` int NOT NULL,
+  `sasia` int NOT NULL DEFAULT '1',
+  `cmimi_unit` decimal(10,2) NOT NULL,
+  `zbritja` decimal(10,2) DEFAULT '0.00',
+  PRIMARY KEY (`id`),
+  KEY `fk_orderdetails_order` (`order_id`),
+  KEY `fk_orderdetails_product` (`product_id`),
+  CONSTRAINT `fk_orderdetails_order` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_orderdetails_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE RESTRICT
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `orderdetails`
+--
+
+LOCK TABLES `orderdetails` WRITE;
+/*!40000 ALTER TABLE `orderdetails` DISABLE KEYS */;
+INSERT INTO `orderdetails` VALUES (2,10,4,20,200.00,10.00);
+/*!40000 ALTER TABLE `orderdetails` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `orders`
+--
+
+DROP TABLE IF EXISTS `orders`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `orders` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `customer_id` int DEFAULT NULL,
+  `user_id` int DEFAULT NULL,
+  `session_id` varchar(255) DEFAULT NULL,
+  `statusi` enum('pending','confirmed','shipped','delivered','cancelled') NOT NULL DEFAULT 'pending',
+  `source` enum('dashboard','store') NOT NULL DEFAULT 'dashboard',
+  `totali` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `shenime` text,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `fk_orders_customer` (`customer_id`),
+  KEY `fk_orders_user` (`user_id`),
+  CONSTRAINT `fk_orders_customer` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `fk_orders_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `orders`
+--
+
+LOCK TABLES `orders` WRITE;
+/*!40000 ALTER TABLE `orders` DISABLE KEYS */;
+INSERT INTO `orders` VALUES (8,10,NULL,NULL,'pending','dashboard',1212111.00,'21','2026-05-02 01:09:16','2026-05-02 01:09:16'),(10,10,NULL,NULL,'shipped','dashboard',1111.00,'222','2026-05-02 13:01:43','2026-05-10 19:18:13');
+/*!40000 ALTER TABLE `orders` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `products`
+--
+
+DROP TABLE IF EXISTS `products`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `products` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `emri` varchar(255) NOT NULL,
+  `kategoria_id` int DEFAULT NULL,
+  `marka` varchar(100) DEFAULT NULL,
+  `modeli` varchar(100) DEFAULT NULL,
+  `pershkrimi` longtext,
+  `cmimi` decimal(10,2) NOT NULL,
+  `cmimi_zbritjes` decimal(10,2) DEFAULT NULL,
+  `sasia_stokut` int DEFAULT '0',
+  `garancia_muaj` int DEFAULT NULL,
+  `foto_kryesore` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `products`
+--
+
+LOCK TABLES `products` WRITE;
+/*!40000 ALTER TABLE `products` DISABLE KEYS */;
+INSERT INTO `products` VALUES (4,'Headphones',NULL,NULL,NULL,NULL,400.00,NULL,0,NULL,NULL),(5,'ps5',NULL,NULL,NULL,NULL,550.00,NULL,0,NULL,NULL),(6,'Samsung phone',NULL,NULL,NULL,NULL,400.00,NULL,0,NULL,NULL),(7,'Mouse',NULL,NULL,NULL,NULL,50.00,NULL,0,NULL,NULL),(9,'Laptop',NULL,NULL,NULL,NULL,800.00,NULL,0,NULL,NULL),(12,'PlayStation 5',4,'Sony',NULL,NULL,550.00,NULL,5,12,NULL),(13,'Samsung Galaxy S24',2,'Samsung',NULL,NULL,400.00,NULL,65,24,NULL),(14,'Wireless Mouse',6,'Logitech',NULL,NULL,50.00,NULL,29,12,NULL),(15,'Laptop UltraBook',3,'Dell',NULL,NULL,800.00,NULL,8,24,NULL),(20,'sd',1,'sdf','sd','sdf',234.00,23.00,234,23,NULL);
+/*!40000 ALTER TABLE `products` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `purchaseorders`
+--
+
+DROP TABLE IF EXISTS `purchaseorders`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `purchaseorders` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `supplier_id` int NOT NULL,
+  `user_id` int DEFAULT NULL,
+  `product_id` int NOT NULL,
+  `sasia` int NOT NULL DEFAULT '1',
+  `cmimi_blerjes` decimal(10,2) NOT NULL,
+  `totali` decimal(10,2) NOT NULL,
+  `statusi` enum('draft','ordered','received','cancelled') NOT NULL DEFAULT 'draft',
+  `data_porosis` date DEFAULT NULL,
+  `data_arritjes` date DEFAULT NULL,
+  `shenime` text,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `fk_po_supplier` (`supplier_id`),
+  KEY `fk_po_user` (`user_id`),
+  KEY `fk_po_product` (`product_id`),
+  CONSTRAINT `fk_po_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `fk_po_supplier` FOREIGN KEY (`supplier_id`) REFERENCES `suppliers` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `fk_po_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `purchaseorders`
+--
+
+LOCK TABLES `purchaseorders` WRITE;
+/*!40000 ALTER TABLE `purchaseorders` DISABLE KEYS */;
+INSERT INTO `purchaseorders` VALUES (1,1,NULL,15,50,5.00,250.00,'draft',NULL,NULL,NULL,'2026-05-02 23:10:19');
+/*!40000 ALTER TABLE `purchaseorders` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `refreshtokens`
+--
+
+DROP TABLE IF EXISTS `refreshtokens`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `refreshtokens` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int NOT NULL,
+  `token` varchar(512) NOT NULL,
+  `expires_at` datetime NOT NULL,
+  `revoked` tinyint(1) NOT NULL DEFAULT '0',
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_refreshtokens_token` (`token`),
-  CONSTRAINT `fk_refreshtokens_user` FOREIGN KEY (`user_id`) REFERENCES `Users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  KEY `fk_refreshtokens_user` (`user_id`),
+  CONSTRAINT `fk_refreshtokens_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `refreshtokens`
+--
 
--- ============================================================
--- 2. KATALOGU
--- ============================================================
+LOCK TABLES `refreshtokens` WRITE;
+/*!40000 ALTER TABLE `refreshtokens` DISABLE KEYS */;
+INSERT INTO `refreshtokens` VALUES (1,3,'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNzc4NDIyMjg1LCJleHAiOjE3NzkwMjcwODV9.S_tbJc4sS2PdprOKT4eQwXBCH7aAp19OjBQxJ1cq2Ts','2026-05-17 16:11:25',1,'2026-05-10 16:11:25'),(2,3,'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNzc4NDIzOTM0LCJleHAiOjE3NzkwMjg3MzR9.PpAgAX1MlJeFSk5WBKor_aMOZtnjszVsMEIthhJjMQY','2026-05-17 16:38:55',1,'2026-05-10 16:38:54'),(3,3,'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNzc4NDM4NzQzLCJleHAiOjE3NzkwNDM1NDN9.nw-IYCWgLw64wgMdEqbmqg7Ld9Lf1fk7a0qUjPXi0oc','2026-05-17 20:45:43',1,'2026-05-10 20:45:43'),(4,3,'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNzc4NDM4Nzk3LCJleHAiOjE3NzkwNDM1OTd9.CgXhv5XbLZUSRRhME_i92XA9PqWckvFIMEgTJ42XGo8','2026-05-17 20:46:37',0,'2026-05-10 20:46:37');
+/*!40000 ALTER TABLE `refreshtokens` ENABLE KEYS */;
+UNLOCK TABLES;
 
-CREATE TABLE IF NOT EXISTS `Categories` (
-  `id`                  INT           NOT NULL AUTO_INCREMENT,
-  `emertimi`            VARCHAR(255)  NOT NULL,
-  `pershkrimi`          TEXT              NULL,
-  `kategoria_prind_id`  INT               NULL,
-  `ikona`               VARCHAR(255)      NULL,
-  `created_at`          DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+--
+-- Table structure for table `roles`
+--
+
+DROP TABLE IF EXISTS `roles`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `roles` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `emertimi` varchar(50) NOT NULL,
+  `pershkrimi` varchar(255) DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  CONSTRAINT `fk_categories_parent` FOREIGN KEY (`kategoria_prind_id`) REFERENCES `Categories` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  UNIQUE KEY `uq_roles_emertimi` (`emertimi`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
--- ---
-CREATE TABLE IF NOT EXISTS `Products` (
-  `id`              INT             NOT NULL AUTO_INCREMENT,
-  `emri`            VARCHAR(255)    NOT NULL,
-  `kategoria_id`    INT                 NULL,
-  `marka`           VARCHAR(100)        NULL,
-  `modeli`          VARCHAR(100)        NULL,
-  `pershkrimi`      LONGTEXT            NULL,
-  `cmimi`           DECIMAL(10,2)   NOT NULL,
-  `cmimi_zbritjes`  DECIMAL(10,2)       NULL,
-  `sasia_stokut`    INT             NOT NULL DEFAULT 0,
-  `garancia_muaj`   INT                 NULL DEFAULT 0,
-  `foto_kryesore`   VARCHAR(255)        NULL,
-  `is_active`       TINYINT(1)      NOT NULL DEFAULT 1,
-  `created_at`      DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at`      DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+--
+-- Dumping data for table `roles`
+--
+
+LOCK TABLES `roles` WRITE;
+/*!40000 ALTER TABLE `roles` DISABLE KEYS */;
+INSERT INTO `roles` VALUES (1,'Admin','Qasje e plote ne sistem','2026-05-01 22:02:37'),(2,'Technician','Menaxhon kerkesat e servisit','2026-05-01 22:02:37'),(3,'Cashier','Krijon porosi dhe menaxhon shitjet','2026-05-01 22:02:37'),(4,'Customer','Klient i regjistruar ne dyqan','2026-05-06 13:58:20');
+/*!40000 ALTER TABLE `roles` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `servicerequests`
+--
+
+DROP TABLE IF EXISTS `servicerequests`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `servicerequests` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `customer_id` int NOT NULL,
+  `product_id` int NOT NULL,
+  `warranty_id` int DEFAULT NULL,
+  `technician_id` int DEFAULT NULL,
+  `problemi` text NOT NULL,
+  `diagnoza` text,
+  `statusi` enum('hapur','ne_proces','zgjidhur','mbyllur','anuluar') NOT NULL DEFAULT 'hapur',
+  `prioriteti` enum('i_ulet','normal','i_larte','urgjent') NOT NULL DEFAULT 'normal',
+  `data_pranim` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `data_perfundim` datetime DEFAULT NULL,
+  `cmimi_servisit` decimal(10,2) DEFAULT '0.00',
+  `shenime` text,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  CONSTRAINT `fk_products_category` FOREIGN KEY (`kategoria_id`) REFERENCES `Categories` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  KEY `fk_sr_customer` (`customer_id`),
+  KEY `fk_sr_product` (`product_id`),
+  KEY `fk_sr_warranty` (`warranty_id`),
+  KEY `fk_sr_technician` (`technician_id`),
+  CONSTRAINT `fk_sr_customer` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `fk_sr_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `fk_sr_technician` FOREIGN KEY (`technician_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `fk_sr_warranty` FOREIGN KEY (`warranty_id`) REFERENCES `warranties` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `servicerequests`
+--
 
--- ============================================================
--- 3. KLIENTET DHE SHITJET
--- ============================================================
+LOCK TABLES `servicerequests` WRITE;
+/*!40000 ALTER TABLE `servicerequests` DISABLE KEYS */;
+/*!40000 ALTER TABLE `servicerequests` ENABLE KEYS */;
+UNLOCK TABLES;
 
-CREATE TABLE IF NOT EXISTS `Customers` (
-  `id`          INT           NOT NULL AUTO_INCREMENT,
-  `emri`        VARCHAR(100)  NOT NULL,
-  `mbiemri`     VARCHAR(100)  NOT NULL,
-  `email`       VARCHAR(255)      NULL,
-  `telefoni`    VARCHAR(30)       NULL,
-  `adresa`      VARCHAR(255)      NULL,
-  `qyteti`      VARCHAR(100)      NULL,
-  `created_at`  DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uq_customers_email` (`email`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+--
+-- Table structure for table `suppliers`
+--
 
--- ---
-CREATE TABLE IF NOT EXISTS `Orders` (
-  `id`          INT             NOT NULL AUTO_INCREMENT,
-  `customer_id` INT                 NULL,
-  `user_id`     INT                 NULL,
-  `statusi`     ENUM('pending','confirmed','shipped','delivered','cancelled') NOT NULL DEFAULT 'pending',
-  `totali`      DECIMAL(10,2)   NOT NULL DEFAULT 0.00,
-  `shenime`     TEXT                NULL,
-  `created_at`  DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at`  DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  CONSTRAINT `fk_orders_customer` FOREIGN KEY (`customer_id`) REFERENCES `Customers` (`id`) ON DELETE SET NULL,
-  CONSTRAINT `fk_orders_user`     FOREIGN KEY (`user_id`)     REFERENCES `Users`     (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- ---
-CREATE TABLE IF NOT EXISTS `OrderDetails` (
-  `id`          INT             NOT NULL AUTO_INCREMENT,
-  `order_id`    INT             NOT NULL,
-  `product_id`  INT             NOT NULL,
-  `sasia`       INT             NOT NULL DEFAULT 1,
-  `cmimi_unit`  DECIMAL(10,2)   NOT NULL,
-  `zbritja`     DECIMAL(10,2)       NULL DEFAULT 0.00,
-  PRIMARY KEY (`id`),
-  CONSTRAINT `fk_orderdetails_order`   FOREIGN KEY (`order_id`)   REFERENCES `Orders`   (`id`) ON DELETE CASCADE,
-  CONSTRAINT `fk_orderdetails_product` FOREIGN KEY (`product_id`) REFERENCES `Products` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-
--- ============================================================
--- 4. LOGJISTIKA
--- ============================================================
-
-CREATE TABLE IF NOT EXISTS `Suppliers` (
-  `id`              INT           NOT NULL AUTO_INCREMENT,
-  `emri_kompanise`  VARCHAR(255)  NOT NULL,
-  `kontakti`        VARCHAR(100)      NULL,
-  `email`           VARCHAR(255)      NULL,
-  `telefoni`        VARCHAR(30)       NULL,
-  `adresa`          VARCHAR(255)      NULL,
-  `created_at`      DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+DROP TABLE IF EXISTS `suppliers`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `suppliers` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `emri_kompanise` varchar(255) NOT NULL,
+  `kontakti` varchar(100) DEFAULT NULL,
+  `email` varchar(255) DEFAULT NULL,
+  `telefoni` varchar(30) DEFAULT NULL,
+  `adresa` varchar(255) DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
--- ---
--- Pa PurchaseOrderDetails — totali ruhet direkt ketu
-CREATE TABLE IF NOT EXISTS `PurchaseOrders` (
-  `id`              INT             NOT NULL AUTO_INCREMENT,
-  `supplier_id`     INT             NOT NULL,
-  `user_id`         INT                 NULL,
-  `product_id`      INT             NOT NULL,   -- produkti i blerë
-  `sasia`           INT             NOT NULL DEFAULT 1,
-  `cmimi_blerjes`   DECIMAL(10,2)   NOT NULL,   -- çmimi për njësi
-  `totali`          DECIMAL(10,2)   NOT NULL,   -- sasia * cmimi_blerjes
-  `statusi`         ENUM('draft','ordered','received','cancelled') NOT NULL DEFAULT 'draft',
-  `data_porosis`    DATE                NULL,
-  `data_arritjes`   DATE                NULL,
-  `shenime`         TEXT                NULL,
-  `created_at`      DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+--
+-- Dumping data for table `suppliers`
+--
+
+LOCK TABLES `suppliers` WRITE;
+/*!40000 ALTER TABLE `suppliers` DISABLE KEYS */;
+INSERT INTO `suppliers` VALUES (1,'kosovak','345','ver@ljnvle','3452345','krbevoer','2026-05-02 22:56:14');
+/*!40000 ALTER TABLE `suppliers` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `userroles`
+--
+
+DROP TABLE IF EXISTS `userroles`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `userroles` (
+  `user_id` int NOT NULL,
+  `role_id` int NOT NULL,
+  `assigned_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`user_id`,`role_id`),
+  KEY `fk_userroles_role` (`role_id`),
+  CONSTRAINT `fk_userroles_role` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_userroles_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `userroles`
+--
+
+LOCK TABLES `userroles` WRITE;
+/*!40000 ALTER TABLE `userroles` DISABLE KEYS */;
+INSERT INTO `userroles` VALUES (3,1,'2026-05-10 16:10:20');
+/*!40000 ALTER TABLE `userroles` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `users`
+--
+
+DROP TABLE IF EXISTS `users`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `users` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `emri` varchar(100) NOT NULL,
+  `mbiemri` varchar(100) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `password_hash` varchar(255) NOT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  CONSTRAINT `fk_po_supplier` FOREIGN KEY (`supplier_id`) REFERENCES `Suppliers` (`id`) ON DELETE RESTRICT,
-  CONSTRAINT `fk_po_user`     FOREIGN KEY (`user_id`)     REFERENCES `Users`     (`id`) ON DELETE SET NULL,
-  CONSTRAINT `fk_po_product`  FOREIGN KEY (`product_id`)  REFERENCES `Products`  (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  UNIQUE KEY `uq_users_email` (`email`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
--- ---
-CREATE TABLE IF NOT EXISTS `Inventory` (
-  `id`              INT           NOT NULL AUTO_INCREMENT,
-  `product_id`      INT           NOT NULL,
-  `lloji`           ENUM('hyrje','dalje','rregullim') NOT NULL,
-  `sasia`           INT           NOT NULL,
-  `referenca_lloji` VARCHAR(50)       NULL,   -- 'Order', 'PurchaseOrder', 'Manual'
-  `referenca_id`    INT               NULL,
-  `shenime`         VARCHAR(255)      NULL,
-  `user_id`         INT               NULL,
-  `created_at`      DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+--
+-- Dumping data for table `users`
+--
+
+LOCK TABLES `users` WRITE;
+/*!40000 ALTER TABLE `users` DISABLE KEYS */;
+INSERT INTO `users` VALUES (3,'Admin','User','admin@store.com','$2b$10$xSk.G/7VMilv4V/z/2yGBO6aEyKrlWa.Qo8zPziVrr6Lng/gbLehi',1,'2026-05-10 16:10:05','2026-05-10 16:10:05');
+/*!40000 ALTER TABLE `users` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `warranties`
+--
+
+DROP TABLE IF EXISTS `warranties`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `warranties` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `product_id` int NOT NULL,
+  `order_detail_id` int NOT NULL,
+  `customer_id` int NOT NULL,
+  `data_fillimit` date NOT NULL,
+  `data_skadimit` date NOT NULL,
+  `statusi` enum('aktive','skaduar','anuluar') NOT NULL DEFAULT 'aktive',
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  CONSTRAINT `fk_inventory_product` FOREIGN KEY (`product_id`) REFERENCES `Products` (`id`) ON DELETE RESTRICT,
-  CONSTRAINT `fk_inventory_user`    FOREIGN KEY (`user_id`)    REFERENCES `Users`    (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  KEY `fk_warranties_product` (`product_id`),
+  KEY `fk_warranties_orderdetail` (`order_detail_id`),
+  KEY `fk_warranties_customer` (`customer_id`),
+  CONSTRAINT `fk_warranties_customer` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `fk_warranties_orderdetail` FOREIGN KEY (`order_detail_id`) REFERENCES `orderdetails` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `fk_warranties_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `warranties`
+--
 
--- ============================================================
--- 5. PAS-SHITJA
--- ============================================================
+LOCK TABLES `warranties` WRITE;
+/*!40000 ALTER TABLE `warranties` DISABLE KEYS */;
+/*!40000 ALTER TABLE `warranties` ENABLE KEYS */;
+UNLOCK TABLES;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
-CREATE TABLE IF NOT EXISTS `Warranties` (
-  `id`              INT       NOT NULL AUTO_INCREMENT,
-  `product_id`      INT       NOT NULL,
-  `order_detail_id` INT       NOT NULL,
-  `customer_id`     INT       NOT NULL,
-  `data_fillimit`   DATE      NOT NULL,
-  `data_skadimit`   DATE      NOT NULL,
-  `statusi`         ENUM('aktive','skaduar','anuluar') NOT NULL DEFAULT 'aktive',
-  `created_at`      DATETIME  NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  CONSTRAINT `fk_warranties_product`     FOREIGN KEY (`product_id`)      REFERENCES `Products`     (`id`) ON DELETE RESTRICT,
-  CONSTRAINT `fk_warranties_orderdetail` FOREIGN KEY (`order_detail_id`) REFERENCES `OrderDetails` (`id`) ON DELETE RESTRICT,
-  CONSTRAINT `fk_warranties_customer`    FOREIGN KEY (`customer_id`)     REFERENCES `Customers`    (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- ---
-CREATE TABLE IF NOT EXISTS `ServiceRequests` (
-  `id`              INT           NOT NULL AUTO_INCREMENT,
-  `customer_id`     INT           NOT NULL,
-  `product_id`      INT           NOT NULL,
-  `warranty_id`     INT               NULL,
-  `technician_id`   INT               NULL,
-  `problemi`        TEXT          NOT NULL,
-  `diagnoza`        TEXT              NULL,
-  `statusi`         ENUM('hapur','ne_proces','zgjidhur','mbyllur','anuluar') NOT NULL DEFAULT 'hapur',
-  `prioriteti`      ENUM('i_ulet','normal','i_larte','urgjent')             NOT NULL DEFAULT 'normal',
-  `data_pranim`     DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `data_perfundim`  DATETIME          NULL,
-  `cmimi_servisit`  DECIMAL(10,2)     NULL DEFAULT 0.00,
-  `shenime`         TEXT              NULL,
-  `created_at`      DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at`      DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  CONSTRAINT `fk_sr_customer`   FOREIGN KEY (`customer_id`)   REFERENCES `Customers`  (`id`) ON DELETE RESTRICT,
-  CONSTRAINT `fk_sr_product`    FOREIGN KEY (`product_id`)    REFERENCES `Products`   (`id`) ON DELETE RESTRICT,
-  CONSTRAINT `fk_sr_warranty`   FOREIGN KEY (`warranty_id`)   REFERENCES `Warranties` (`id`) ON DELETE SET NULL,
-  CONSTRAINT `fk_sr_technician` FOREIGN KEY (`technician_id`) REFERENCES `Users`      (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-
--- ============================================================
--- 6. AUDIT LOGS
--- ============================================================
-
-CREATE TABLE IF NOT EXISTS `AuditLogs` (
-  `id`          INT           NOT NULL AUTO_INCREMENT,
-  `user_id`     INT               NULL,
-  `veprimi`     VARCHAR(100)  NOT NULL,   -- 'DELETE_PRODUCT', 'CHANGE_PRICE', etj.
-  `tabela`      VARCHAR(100)      NULL,
-  `rekord_id`   INT               NULL,
-  `vlera_para`  JSON              NULL,
-  `vlera_pas`   JSON              NULL,
-  `ip_adresa`   VARCHAR(45)       NULL,
-  `created_at`  DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  CONSTRAINT `fk_auditlogs_user` FOREIGN KEY (`user_id`) REFERENCES `Users` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-
--- ============================================================
--- 7. SEED DATA
--- ============================================================
-
-INSERT INTO `Roles` (`emertimi`, `pershkrimi`) VALUES
-  ('Admin',      'Qasje e plote ne sistem'),
-  ('Technician', 'Menaxhon kerkesat e servisit'),
-  ('Cashier',    'Krijon porosi dhe menaxhon shitjet');
-
-INSERT INTO `Categories` (`emertimi`, `pershkrimi`, `kategoria_prind_id`) VALUES
-  ('Elektronike', 'Te gjitha produktet elektronike', NULL),
-  ('Telefona',    'Telefona celulare dhe aksesore',  1),
-  ('Laptope',     'Laptope dhe aksesore',            1),
-  ('Gaming',      'Konzola dhe aksesore gaming',     1),
-  ('Audio',       'Kufje, altoparlante, mikrofona',  1),
-  ('Periferike',  'Mouse, tastiere, monitore',       1);
-
-INSERT INTO `Products` (`emri`, `kategoria_id`, `marka`, `cmimi`, `sasia_stokut`, `garancia_muaj`) VALUES
-  ('Headphones Pro',     5, 'Sony',    400.00, 10, 24),
-  ('PlayStation 5',      4, 'Sony',    550.00,  5, 12),
-  ('Samsung Galaxy S24', 2, 'Samsung', 400.00, 15, 24),
-  ('Wireless Mouse',     6, 'Logitech', 50.00, 30, 12),
-  ('Laptop UltraBook',   3, 'Dell',    800.00,  8, 24);
-
-SET FOREIGN_KEY_CHECKS = 1;
-
--- ============================================================
--- FUND - 12 tabela
--- ============================================================
-
+-- Dump completed on 2026-05-10 21:16:16
