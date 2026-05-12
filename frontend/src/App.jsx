@@ -12,6 +12,8 @@ import OrderDetails from './components/OrderDetails';
 import Suppliers from './components/Suppliers';
 import PurchaseOrders from './components/PurchaseOrders';
 import Inventory from './components/Inventory';
+import Dashboard from './pages/Dashboard';
+
 
 // Nav link style helper
 const navClass = ({ isActive }) =>
@@ -25,6 +27,7 @@ function Sidebar() {
   const { user, logout } = useAuth();
 
   const links = [
+    { to: '/dashboard', label: 'Dashboard' },
     { to: '/products',       label: 'Products' },
     { to: '/categories',     label: 'Categories' },
     { to: '/customers',      label: 'Customers' },
@@ -76,6 +79,7 @@ function Layout() {
       <Sidebar />
       <main className="flex-1 p-6 overflow-auto">
         <Routes>
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/" element={<Navigate to="/products" replace />} />
           <Route path="/products"        element={<Products />} />
           <Route path="/categories"      element={<Categories />} />

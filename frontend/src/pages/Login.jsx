@@ -10,7 +10,7 @@ function Login() {
   const [loading, setLoading] = useState(false);
 
   // If already logged in, go straight to dashboard
-  if (user) return <Navigate to="/" replace />;
+  if (user) return <Navigate to="/dashboard" replace />;
 
   const handleSubmit = async (e) => {
     e.preventDefault();

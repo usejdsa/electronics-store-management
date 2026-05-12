@@ -14,6 +14,7 @@ const suppliersRoutes = require("./routes/suppliers");
 const purchaseOrdersRoutes = require("./routes/purchaseOrders");
 const inventoryRoute = require("./routes/inventory");
 const customerPortalRoutes = require('./routes/customerPortal');
+const dashboardRoute = require('./routes/dashboard');
 
 const db = require('./config/db');
 
@@ -39,6 +40,7 @@ app.use("/api/suppliers", suppliersRoutes);
 app.use("/api/purchase-orders", purchaseOrdersRoutes);
 app.use("/api/inventory", inventoryRoute);
 app.use('/api/customer', customerPortalRoutes);
+app.use('/api/dashboard', dashboardRoute);
 
 
 // Test DB connection
