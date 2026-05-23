@@ -5,7 +5,7 @@ const verifyToken = require('../middleware/auth');
 const checkRole = require('../middleware/checkRole');
 
 // GET — Admin dhe Technician
-router.get('/', verifyToken, checkRole(['Admin', 'Technician']), (req, res) => {
+router.get('/', verifyToken, checkRole(['Admin', 'Technician', 'Cashier']), (req, res) => {
   db.query('SELECT * FROM Categories ORDER BY kategoria_prind_id, emertimi', (err, result) => {
     if (err) return res.status(500).json({ message: 'DB error', error: err });
     res.json(result);

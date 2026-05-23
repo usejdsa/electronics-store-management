@@ -4,16 +4,14 @@ const db = require('../config/db');
 const verifyToken = require('../middleware/auth');
 const checkRole = require('../middleware/checkRole');
 
-// GET — Admin
-router.get('/', verifyToken, checkRole(['Admin']), (req, res) => {
+router.get('/', verifyToken, checkRole(['Admin', 'Cashier']), (req, res) => {
   db.query('SELECT * FROM Customers ORDER BY created_at DESC', (err, result) => {
     if (err) return res.status(500).json({ message: 'DB error', error: err });
     res.json(result);
   });
 });
 
-// GET single — Admin
-router.get('/:id', verifyToken, checkRole(['Admin']), (req, res) => {
+router.get('/:id', verifyToken, checkRole(['Admin', 'Cashier']), (req, res) => {
   db.query('SELECT * FROM Customers WHERE id = ?', [req.params.id], (err, result) => {
     if (err) return res.status(500).json({ message: 'DB error', error: err });
     if (result.length === 0) return res.status(404).json({ message: 'Klienti nuk u gjet.' });
@@ -21,8 +19,7 @@ router.get('/:id', verifyToken, checkRole(['Admin']), (req, res) => {
   });
 });
 
-// POST — Admin
-router.post('/', verifyToken, checkRole(['Admin']), (req, res) => {
+router.post('/', verifyToken, checkRole(['Admin', 'Cashier']), (req, res) => {
   const { emri, mbiemri, email, telefoni, adresa, qyteti } = req.body;
   if (!emri || !mbiemri) return res.status(400).json({ message: 'Emri dhe mbiemri jane te detyrueshme.' });
 
@@ -36,8 +33,7 @@ router.post('/', verifyToken, checkRole(['Admin']), (req, res) => {
   );
 });
 
-// PUT — Admin
-router.put('/:id', verifyToken, checkRole(['Admin']), (req, res) => {
+router.put('/:id', verifyToken, checkRole(['Admin', 'Cashier']), (req, res) => {
   const { emri, mbiemri, email, telefoni, adresa, qyteti } = req.body;
   if (!emri || !mbiemri) return res.status(400).json({ message: 'Emri dhe mbiemri jane te detyrueshme.' });
 
@@ -47,12 +43,11 @@ router.put('/:id', verifyToken, checkRole(['Admin']), (req, res) => {
     (err, result) => {
       if (err) return res.status(500).json({ message: 'DB error', error: err });
       if (result.affectedRows === 0) return res.status(404).json({ message: 'Klienti nuk u gjet.' });
-      res.json({ message: 'Klienti u përditësua.' });
+      res.json({ message: 'Klienti u perditesua.' });
     }
   );
 });
 
-// DELETE — vetëm Admin
 router.delete('/:id', verifyToken, checkRole(['Admin']), (req, res) => {
   db.query('DELETE FROM Customers WHERE id = ?', [req.params.id], (err, result) => {
     if (err) return res.status(500).json({ message: 'DB error', error: err });

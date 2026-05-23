@@ -4,7 +4,7 @@ const db = require('../config/db');
 const verifyToken = require('../middleware/auth');
 const checkRole = require('../middleware/checkRole');
 
-router.get('/', verifyToken, checkRole(['Admin']), (req, res) => {
+router.get('/', verifyToken, checkRole(['Admin', 'Cashier']), (req, res) => {
   const sql = `
     SELECT o.*, CONCAT(c.emri, ' ', c.mbiemri) AS customer_emri
     FROM Orders o
@@ -17,7 +17,7 @@ router.get('/', verifyToken, checkRole(['Admin']), (req, res) => {
   });
 });
 
-router.get('/:id', verifyToken, checkRole(['Admin']), (req, res) => {
+router.get('/:id', verifyToken, checkRole(['Admin', 'Cashier']), (req, res) => {
   const sql = `
     SELECT o.*, od.id AS detail_id, od.sasia, od.cmimi_unit, od.zbritja,
       p.emri AS produkt_emri, p.marka,
@@ -35,9 +35,9 @@ router.get('/:id', verifyToken, checkRole(['Admin']), (req, res) => {
   });
 });
 
-router.post('/', verifyToken, checkRole(['Admin']), (req, res) => {
+router.post('/', verifyToken, checkRole(['Admin', 'Cashier']), (req, res) => {
   const { customer_id, statusi, totali, shenime } = req.body;
-  if (!customer_id) return res.status(400).json({ message: 'customer_id është i detyrueshëm.' });
+  if (!customer_id) return res.status(400).json({ message: 'customer_id eshte i detyrueshme.' });
 
   db.query(
     'INSERT INTO Orders (customer_id, statusi, totali, shenime) VALUES (?, ?, ?, ?)',
@@ -49,14 +49,12 @@ router.post('/', verifyToken, checkRole(['Admin']), (req, res) => {
   );
 });
 
-router.put('/:id', verifyToken, checkRole(['Admin']), (req, res) => {
+router.put('/:id', verifyToken, checkRole(['Admin', 'Cashier']), (req, res) => {
   const { customer_id, statusi, totali, shenime } = req.body;
-  if (!customer_id) return res.status(400).json({ message: 'customer_id është i detyrueshëm.' });
+  if (!customer_id) return res.status(400).json({ message: 'customer_id eshte i detyrueshme.' });
 
   const validStatuses = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'];
-  if (statusi && !validStatuses.includes(statusi)) {
-    return res.status(400).json({ message: 'Status i pavlefshëm.' });
-  }
+  if (statusi && !validStatuses.includes(statusi)) return res.status(400).json({ message: 'Status i pavlefshme.' });
 
   db.query(
     'UPDATE Orders SET customer_id = ?, statusi = ?, totali = ?, shenime = ? WHERE id = ?',
@@ -64,20 +62,20 @@ router.put('/:id', verifyToken, checkRole(['Admin']), (req, res) => {
     (err, result) => {
       if (err) return res.status(500).json({ message: 'DB error', error: err });
       if (result.affectedRows === 0) return res.status(404).json({ message: 'Porosia nuk u gjet.' });
-      res.json({ message: 'Porosia u përditësua.' });
+      res.json({ message: 'Porosia u perditesua.' });
     }
   );
 });
 
-router.put('/:id/status', verifyToken, checkRole(['Admin']), (req, res) => {
+router.put('/:id/status', verifyToken, checkRole(['Admin', 'Cashier']), (req, res) => {
   const { statusi } = req.body;
   const validStatuses = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'];
-  if (!validStatuses.includes(statusi)) return res.status(400).json({ message: 'Status i pavlefshëm.' });
+  if (!validStatuses.includes(statusi)) return res.status(400).json({ message: 'Status i pavlefshme.' });
 
   db.query('UPDATE Orders SET statusi = ? WHERE id = ?', [statusi, req.params.id], (err, result) => {
     if (err) return res.status(500).json({ message: 'DB error', error: err });
     if (result.affectedRows === 0) return res.status(404).json({ message: 'Porosia nuk u gjet.' });
-    res.json({ message: 'Statusi u përditësua.' });
+    res.json({ message: 'Statusi u perditesua.' });
   });
 });
 

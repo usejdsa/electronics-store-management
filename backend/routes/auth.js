@@ -18,7 +18,7 @@ router.post('/register', verifyToken, checkRole(['Admin']), async (req, res) => 
   }
 
   // Vetëm Admin (1) dhe Technician (2) mund të regjistrohen këtu
-  const allowedRoles = [1, 2];
+  const allowedRoles = [1, 2, 3];
   if (role_id && !allowedRoles.includes(Number(role_id))) {
     return res.status(400).json({ message: 'Role i pavlefshëm. Lejohen vetëm Admin dhe Technician.' });
   }
@@ -206,20 +206,22 @@ router.post('/refresh', (req, res) => {
       try {
         const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET);
 
-        const sql = `
-          SELECT GROUP_CONCAT(r.emertimi) AS roles
-          FROM UserRoles ur
-          JOIN Roles r ON ur.role_id = r.id
-          WHERE ur.user_id = ?
+        const userSql = `
+          SELECT u.email, u.emri, GROUP_CONCAT(r.emertimi) AS roles
+          FROM Users u
+          LEFT JOIN UserRoles ur ON u.id = ur.user_id
+          LEFT JOIN Roles r ON ur.role_id = r.id
+          WHERE u.id = ?
+          GROUP BY u.id
         `;
-
-        db.query(sql, [decoded.id], (err, roleResult) => {
+        db.query(userSql, [decoded.id], (err, roleResult) => {
           if (err) return res.status(500).json({ message: 'DB error', error: err });
 
-          const roles = roleResult[0]?.roles ? roleResult[0].roles.split(',') : [];
+          const row = roleResult[0];
+          const roles = row?.roles ? row.roles.split(',') : [];
 
           const newAccessToken = jwt.sign(
-            { id: decoded.id, roles },
+            { id: decoded.id, email: row?.email, emri: row?.emri, roles },
             process.env.JWT_SECRET,
             { expiresIn: process.env.JWT_EXPIRES_IN || '15m' }
           );

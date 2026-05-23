@@ -73,7 +73,7 @@ CREATE TABLE `categories` (
 
 LOCK TABLES `categories` WRITE;
 /*!40000 ALTER TABLE `categories` DISABLE KEYS */;
-INSERT INTO `categories` VALUES (1,'Elektronike','Te gjitha produktet elektronike',NULL,NULL,'2026-05-01 22:02:37'),(2,'Telefona','Telefona celulare dhe aksesore',1,NULL,'2026-05-01 22:02:37'),(3,'Laptope','Laptope dhe aksesore',1,NULL,'2026-05-01 22:02:37'),(4,'Gaming','Konzola dhe aksesore gaming',1,NULL,'2026-05-01 22:02:37'),(5,'Audio','Kufje, altoparlante, mikrofona',1,NULL,'2026-05-01 22:02:37'),(6,'Periferike','Mouse, tastiere, monitore',1,NULL,'2026-05-01 22:02:37');
+INSERT INTO `categories` VALUES (1,'Elektronik','Te gjitha produktet elektronike',NULL,NULL,'2026-05-01 22:02:37'),(2,'Telefona','Telefona celulare dhe aksesore',1,NULL,'2026-05-01 22:02:37'),(3,'Laptope','Laptope dhe aksesore',1,NULL,'2026-05-01 22:02:37'),(4,'Gaming','Konzola dhe aksesore gaming',1,NULL,'2026-05-01 22:02:37'),(5,'Audio','Kufje, altoparlante, mikrofona',1,NULL,'2026-05-01 22:02:37'),(6,'Periferike','Mouse, tastiere, monitore',1,NULL,'2026-05-01 22:02:37');
 /*!40000 ALTER TABLE `categories` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -98,7 +98,7 @@ CREATE TABLE `customers` (
   UNIQUE KEY `uq_customers_email` (`email`),
   KEY `fk_customers_user` (`user_id`),
   CONSTRAINT `fk_customers_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -107,7 +107,7 @@ CREATE TABLE `customers` (
 
 LOCK TABLES `customers` WRITE;
 /*!40000 ALTER TABLE `customers` DISABLE KEYS */;
-INSERT INTO `customers` VALUES (10,NULL,'usejd','salihu','23@45','2345','23456','67','2026-05-02 00:45:40');
+INSERT INTO `customers` VALUES (10,NULL,'Usejd','Salihu','23@45','2345','23456','67','2026-05-02 00:45:40'),(12,4,'Usejd','Salihu','usejd@store.com',NULL,NULL,NULL,'2026-05-23 14:47:10');
 /*!40000 ALTER TABLE `customers` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -201,7 +201,7 @@ CREATE TABLE `orders` (
   KEY `fk_orders_user` (`user_id`),
   CONSTRAINT `fk_orders_customer` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE SET NULL,
   CONSTRAINT `fk_orders_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -234,7 +234,7 @@ CREATE TABLE `products` (
   `garancia_muaj` int DEFAULT NULL,
   `foto_kryesore` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -243,7 +243,7 @@ CREATE TABLE `products` (
 
 LOCK TABLES `products` WRITE;
 /*!40000 ALTER TABLE `products` DISABLE KEYS */;
-INSERT INTO `products` VALUES (4,'Headphones',NULL,NULL,NULL,NULL,400.00,NULL,0,NULL,NULL),(5,'ps5',NULL,NULL,NULL,NULL,550.00,NULL,0,NULL,NULL),(6,'Samsung phone',NULL,NULL,NULL,NULL,400.00,NULL,0,NULL,NULL),(7,'Mouse',NULL,NULL,NULL,NULL,50.00,NULL,0,NULL,NULL),(9,'Laptop',NULL,NULL,NULL,NULL,800.00,NULL,0,NULL,NULL),(12,'PlayStation 5',4,'Sony',NULL,NULL,550.00,NULL,5,12,NULL),(13,'Samsung Galaxy S24',2,'Samsung',NULL,NULL,400.00,NULL,65,24,NULL),(14,'Wireless Mouse',6,'Logitech',NULL,NULL,50.00,NULL,29,12,NULL),(15,'Laptop UltraBook',3,'Dell',NULL,NULL,800.00,NULL,8,24,NULL),(20,'sd',1,'sdf','sd','sdf',234.00,23.00,234,23,NULL);
+INSERT INTO `products` VALUES (4,'Headphones',NULL,NULL,NULL,NULL,400.00,NULL,0,NULL,NULL),(5,'ps5',NULL,NULL,NULL,NULL,550.00,NULL,0,NULL,NULL),(6,'Samsung phone',NULL,NULL,NULL,NULL,400.00,NULL,0,NULL,NULL),(7,'Mouse',NULL,NULL,NULL,NULL,50.00,NULL,0,NULL,NULL),(9,'Laptop',NULL,NULL,NULL,NULL,800.00,NULL,0,NULL,NULL),(12,'PlayStation 5',4,'Sony',NULL,NULL,550.00,NULL,5,12,NULL),(13,'Samsung Galaxy S24',2,'Samsung',NULL,NULL,400.00,NULL,65,24,NULL),(14,'Wireless Mouse',6,'Logitech',NULL,NULL,50.00,NULL,29,12,NULL),(15,'Laptop UltraBook',3,'Dell',NULL,NULL,800.00,NULL,8,24,NULL),(20,'wtv',1,'sdf','sd','sdf',234.00,23.00,234,23,NULL);
 /*!40000 ALTER TABLE `products` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -283,7 +283,7 @@ CREATE TABLE `purchaseorders` (
 
 LOCK TABLES `purchaseorders` WRITE;
 /*!40000 ALTER TABLE `purchaseorders` DISABLE KEYS */;
-INSERT INTO `purchaseorders` VALUES (1,1,NULL,15,50,5.00,250.00,'draft',NULL,NULL,NULL,'2026-05-02 23:10:19');
+INSERT INTO `purchaseorders` VALUES (1,1,NULL,15,60,5.00,300.00,'draft',NULL,NULL,NULL,'2026-05-02 23:10:19');
 /*!40000 ALTER TABLE `purchaseorders` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -305,7 +305,7 @@ CREATE TABLE `refreshtokens` (
   UNIQUE KEY `uq_refreshtokens_token` (`token`),
   KEY `fk_refreshtokens_user` (`user_id`),
   CONSTRAINT `fk_refreshtokens_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -314,7 +314,7 @@ CREATE TABLE `refreshtokens` (
 
 LOCK TABLES `refreshtokens` WRITE;
 /*!40000 ALTER TABLE `refreshtokens` DISABLE KEYS */;
-INSERT INTO `refreshtokens` VALUES (1,3,'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNzc4NDIyMjg1LCJleHAiOjE3NzkwMjcwODV9.S_tbJc4sS2PdprOKT4eQwXBCH7aAp19OjBQxJ1cq2Ts','2026-05-17 16:11:25',1,'2026-05-10 16:11:25'),(2,3,'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNzc4NDIzOTM0LCJleHAiOjE3NzkwMjg3MzR9.PpAgAX1MlJeFSk5WBKor_aMOZtnjszVsMEIthhJjMQY','2026-05-17 16:38:55',1,'2026-05-10 16:38:54'),(3,3,'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNzc4NDM4NzQzLCJleHAiOjE3NzkwNDM1NDN9.nw-IYCWgLw64wgMdEqbmqg7Ld9Lf1fk7a0qUjPXi0oc','2026-05-17 20:45:43',1,'2026-05-10 20:45:43'),(4,3,'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNzc4NDM4Nzk3LCJleHAiOjE3NzkwNDM1OTd9.CgXhv5XbLZUSRRhME_i92XA9PqWckvFIMEgTJ42XGo8','2026-05-17 20:46:37',0,'2026-05-10 20:46:37');
+INSERT INTO `refreshtokens` VALUES (1,3,'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNzc4NDIyMjg1LCJleHAiOjE3NzkwMjcwODV9.S_tbJc4sS2PdprOKT4eQwXBCH7aAp19OjBQxJ1cq2Ts','2026-05-17 16:11:25',1,'2026-05-10 16:11:25'),(2,3,'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNzc4NDIzOTM0LCJleHAiOjE3NzkwMjg3MzR9.PpAgAX1MlJeFSk5WBKor_aMOZtnjszVsMEIthhJjMQY','2026-05-17 16:38:55',1,'2026-05-10 16:38:54'),(3,3,'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNzc4NDM4NzQzLCJleHAiOjE3NzkwNDM1NDN9.nw-IYCWgLw64wgMdEqbmqg7Ld9Lf1fk7a0qUjPXi0oc','2026-05-17 20:45:43',1,'2026-05-10 20:45:43'),(4,3,'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNzc4NDM4Nzk3LCJleHAiOjE3NzkwNDM1OTd9.CgXhv5XbLZUSRRhME_i92XA9PqWckvFIMEgTJ42XGo8','2026-05-17 20:46:37',1,'2026-05-10 20:46:37'),(5,3,'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNzc4OTU4MDE0LCJleHAiOjE3Nzk1NjI4MTR9.2UejE42RnqZfrsPdkt-hXfk6cOqxIZACZgrw0CrErhM','2026-05-23 21:00:15',1,'2026-05-16 21:00:14'),(6,3,'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNzc4OTY0MTU4LCJleHAiOjE3Nzk1Njg5NTh9.dKgyRMpFSCSxZN9NpgWgyWLHCLLpOfgL8EswTu4Vo3Q','2026-05-23 22:42:39',1,'2026-05-16 22:42:38'),(7,3,'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNzc5MDk0NTAxLCJleHAiOjE3Nzk2OTkzMDF9.9MWD2-DGypgajWY2fEJ9v6rM_-lFJM_r5NTxVKjPS6Y','2026-05-25 10:55:02',1,'2026-05-18 10:55:01'),(8,3,'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNzc5NDUzNjg3LCJleHAiOjE3ODAwNTg0ODd9.lSGr7kRXssaeZfiLnROcBmJTel1_Eo-c_EkA0L1tdBE','2026-05-29 14:41:28',1,'2026-05-22 14:41:27'),(9,4,'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NCwiaWF0IjoxNzc5NTQwNDQyLCJleHAiOjE3ODAxNDUyNDJ9.MPKOEY3kW60Bu6_XpTdNlwZgu4JEJCA0FElZogFR1Qk','2026-05-30 14:47:23',0,'2026-05-23 14:47:22'),(10,3,'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNzc5NTQwNjYxLCJleHAiOjE3ODAxNDU0NjF9.YWecP6LaLMnqM4jJ4YHMsjKBzX293dYX11a-IdkDjt4','2026-05-30 14:51:01',1,'2026-05-23 14:51:01'),(11,4,'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NCwiaWF0IjoxNzc5NTQwNjk1LCJleHAiOjE3ODAxNDU0OTV9.KOxR5JMJ_IAUq-cEdRmZnTvRlvlyQxcc5iwq-Y4HH5U','2026-05-30 14:51:36',1,'2026-05-23 14:51:35'),(12,3,'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNzc5NTQwOTYwLCJleHAiOjE3ODAxNDU3NjB9.4V9K-P3eAk7qQizBpuL30J-MVkP271XKkXY0JBUqjec','2026-05-30 14:56:01',1,'2026-05-23 14:56:00'),(13,4,'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NCwiaWF0IjoxNzc5NTQwOTkwLCJleHAiOjE3ODAxNDU3OTB9.O94rv_eCO2csyGYWY36ba4mT9La69QvwcYMBu6mTof0','2026-05-30 14:56:31',1,'2026-05-23 14:56:30'),(14,3,'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNzc5NTQxMDk1LCJleHAiOjE3ODAxNDU4OTV9.wJj31JvrSqMdV9CL5sQx6RyZcLYWX7ptlquDyG8r_dY','2026-05-30 14:58:16',1,'2026-05-23 14:58:15'),(15,4,'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NCwiaWF0IjoxNzc5NTQxNjc0LCJleHAiOjE3ODAxNDY0NzR9.AIB1dsvs1TxYtXkEXYmuwYt4ddEzufSYuRnOrOLtTzM','2026-05-30 15:07:55',1,'2026-05-23 15:07:54'),(16,4,'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NCwiaWF0IjoxNzc5NTQxODA1LCJleHAiOjE3ODAxNDY2MDV9.r0ksvcBlu_NtgllBIzlRkOhY-nLUokrWlevGIvlqcfY','2026-05-30 15:10:05',1,'2026-05-23 15:10:05'),(17,3,'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNzc5NTQxODM5LCJleHAiOjE3ODAxNDY2Mzl9.tvvFRhpeKCXzN9qZhvsWRaXtaWY1p35RjCr3wQuqe8U','2026-05-30 15:10:40',1,'2026-05-23 15:10:39'),(18,4,'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NCwiaWF0IjoxNzc5NTQxODYwLCJleHAiOjE3ODAxNDY2NjB9.37zclS-gu9vyGRSTVm9Ng6d-pfOyD95A_UWp4nCR9hM','2026-05-30 15:11:01',1,'2026-05-23 15:11:00'),(19,3,'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNzc5NTQxODc4LCJleHAiOjE3ODAxNDY2Nzh9.boG8aE1tWMX0L6CDnwKINrGmNhOsZ5gKcexrCCKHO_M','2026-05-30 15:11:19',1,'2026-05-23 15:11:18'),(20,4,'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NCwiaWF0IjoxNzc5NTQxODkzLCJleHAiOjE3ODAxNDY2OTN9.zKyyEhtFudxbfffWaIDRd4e4j6iwYFR3KxuSRklPyXM','2026-05-30 15:11:34',0,'2026-05-23 15:11:33');
 /*!40000 ALTER TABLE `refreshtokens` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -414,7 +414,7 @@ CREATE TABLE `suppliers` (
 
 LOCK TABLES `suppliers` WRITE;
 /*!40000 ALTER TABLE `suppliers` DISABLE KEYS */;
-INSERT INTO `suppliers` VALUES (1,'kosovak','345','ver@ljnvle','3452345','krbevoer','2026-05-02 22:56:14');
+INSERT INTO `suppliers` VALUES (1,'kosovako','345','ver@ljnvle','3452345','krbevoer','2026-05-02 22:56:14');
 /*!40000 ALTER TABLE `suppliers` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -442,7 +442,7 @@ CREATE TABLE `userroles` (
 
 LOCK TABLES `userroles` WRITE;
 /*!40000 ALTER TABLE `userroles` DISABLE KEYS */;
-INSERT INTO `userroles` VALUES (3,1,'2026-05-10 16:10:20');
+INSERT INTO `userroles` VALUES (3,1,'2026-05-10 16:10:20'),(4,3,'2026-05-23 15:11:24'),(4,4,'2026-05-23 15:11:24');
 /*!40000 ALTER TABLE `userroles` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -464,7 +464,7 @@ CREATE TABLE `users` (
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_users_email` (`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -473,7 +473,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (3,'Admin','User','admin@store.com','$2b$10$xSk.G/7VMilv4V/z/2yGBO6aEyKrlWa.Qo8zPziVrr6Lng/gbLehi',1,'2026-05-10 16:10:05','2026-05-10 16:10:05');
+INSERT INTO `users` VALUES (3,'Admin','User','admin@store.com','$2b$10$xSk.G/7VMilv4V/z/2yGBO6aEyKrlWa.Qo8zPziVrr6Lng/gbLehi',1,'2026-05-10 16:10:05','2026-05-10 16:10:05'),(4,'Usejd','Salihu','usejd@store.com','$2b$10$Ku00FO3Lv6ZRZiIA6G9Y1.z8kC.To1GTaR8UzBdEJnYoLwp/Rxg5y',1,'2026-05-23 14:47:10','2026-05-23 14:47:10');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -521,4 +521,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-05-10 21:16:16
+-- Dump completed on 2026-05-23 15:12:48

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import api from '../api/axios';
+import { useRole } from '../hooks/useRole';
 
 const empty = { customer_id: '', statusi: 'pending', totali: '', shenime: '' };
 const STATUSES = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'];
@@ -9,6 +10,10 @@ function Orders() {
   const [customers, setCustomers] = useState([]);
   const [editId, setEditId] = useState(null);
   const [form, setForm] = useState(empty);
+  const { can } = useRole();
+
+  const canMutate = can('mutate:orders');
+  const canDelete = can('delete:orders');
 
   const fetchOrders = () => api.get('/orders').then(res => setOrders(res.data)).catch(console.error);
 
@@ -34,9 +39,9 @@ function Orders() {
   const handleEdit = (o) => {
     setEditId(o.id);
     setForm({
-      customer_id: o.customer_id || '',
+      customer_id: o.customer_id ? String(o.customer_id) : '',
       statusi: o.statusi || 'pending',
-      totali: o.totali || '',
+      totali: o.totali ?? '',
       shenime: o.shenime || '',
     });
   };
@@ -50,32 +55,36 @@ function Orders() {
     <div>
       <h2>Orders</h2>
 
-      {editId && (
-        <div style={{ background: '#fef3c7', border: '1px solid #f59e0b', borderRadius: 8, padding: '8px 14px', marginBottom: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 13 }}>
-          <span>Editing order #{editId}</span>
-          <button onClick={() => { setEditId(null); setForm(empty); }} style={{ background: 'none', border: 'none', color: '#92400e', cursor: 'pointer', textDecoration: 'underline' }}>Cancel</button>
-        </div>
-      )}
+      {canMutate && (
+        <>
+          {editId && (
+            <div style={{ background: '#fef3c7', border: '1px solid #f59e0b', borderRadius: 8, padding: '8px 14px', marginBottom: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 13 }}>
+              <span>Editing order #{editId}</span>
+              <button onClick={() => { setEditId(null); setForm(empty); }} style={{ background: 'none', border: 'none', color: '#92400e', cursor: 'pointer', textDecoration: 'underline' }}>Cancel</button>
+            </div>
+          )}
 
-      <form onSubmit={handleSubmit}>
-        <select required value={form.customer_id} onChange={set('customer_id')}>
-          <option value="">Select Customer *</option>
-          {customers.map(c => <option key={c.id} value={c.id}>{c.emri} {c.mbiemri}</option>)}
-        </select>
-        <select value={form.statusi} onChange={set('statusi')}>
-          {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
-        </select>
-        <input type="number" step="0.01" placeholder="Total (totali)" value={form.totali} onChange={set('totali')} />
-        <input placeholder="Notes (shenime)" value={form.shenime} onChange={set('shenime')} />
-        <button type="submit" className="btn-add">{editId ? 'Update Order' : 'Add Order'}</button>
-      </form>
+          <form onSubmit={handleSubmit}>
+            <select required value={form.customer_id} onChange={set('customer_id')}>
+              <option value="">Select Customer *</option>
+              {customers.map(c => <option key={c.id} value={String(c.id)}>{c.emri} {c.mbiemri}</option>)}
+            </select>
+            <select value={form.statusi} onChange={set('statusi')}>
+              {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+            <input type="number" step="0.01" placeholder="Total (totali)" value={form.totali} onChange={set('totali')} />
+            <input placeholder="Notes (shenime)" value={form.shenime} onChange={set('shenime')} />
+            <button type="submit" className="btn-add">{editId ? 'Update Order' : 'Add Order'}</button>
+          </form>
+        </>
+      )}
 
       {orders.map(o => (
         <div key={o.id} className="list-row">
           <span>Order #{o.id} — {o.customer_emri} — <strong>{o.statusi}</strong> — {o.totali}€</span>
           <span>
-            <button className="btn-edit" onClick={() => handleEdit(o)}>Edit</button>
-            <button className="btn-delete" onClick={() => handleDelete(o.id)}>Delete</button>
+            {canMutate && <button className="btn-edit" onClick={() => handleEdit(o)}>Edit</button>}
+            {canDelete && <button className="btn-delete" onClick={() => handleDelete(o.id)}>Delete</button>}
           </span>
         </div>
       ))}

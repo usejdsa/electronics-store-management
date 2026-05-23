@@ -5,7 +5,7 @@ const verifyToken = require('../middleware/auth');
 const checkRole = require('../middleware/checkRole');
 
 // GET /api/dashboard — Stats kryesore
-router.get('/', verifyToken, checkRole(['Admin']), (req, res) => {
+router.get('/', verifyToken, checkRole(['Admin', 'Technician', 'Cashier']), (req, res) => {
 
   const queries = {
     totalProducts:    'SELECT COUNT(*) AS total FROM Products',
