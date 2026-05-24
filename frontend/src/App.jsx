@@ -41,6 +41,7 @@ function Sidebar() {
     { to: '/purchase-orders', label: 'Purchase Orders',  show: can('view:purchase-orders') },
     { to: '/inventory',       label: 'Inventory',        show: can('view:inventory') },
     { to: '/users',           label: 'User Management',  show: isAdmin },
+    { to: '/home',            label: 'Customer View',    show: true },
   ];
 
   return (
@@ -146,21 +147,26 @@ function AppRoutes() {
       <Route path="/register" element={<Register />} />
       <Route path="/unauthorized" element={<Unauthorized />} />
 
+      {/* /home - e arritshme nga të gjithë (customer + staff) */}
       <Route path="/home" element={
         <ProtectedRoute>
           <CustomerHome />
         </ProtectedRoute>
       } />
 
+      {/* Staff routes */}
       <Route path="/*" element={
         <ProtectedRoute>
           {isStaff ? <StaffLayout /> : <Navigate to="/home" replace />}
         </ProtectedRoute>
       } />
 
+      {/* Redirect pas login — staff → /dashboard, customer → /home */}
       <Route path="/" element={
         user
-          ? <Navigate to="/home" replace />
+          ? isStaff
+            ? <Navigate to="/dashboard" replace />
+            : <Navigate to="/home" replace />
           : <Navigate to="/login" replace />
       } />
     </Routes>
