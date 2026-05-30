@@ -18,10 +18,15 @@ const usersRoute = require('./routes/users');
 
 const db = require('./config/db');
 
+const path = require('path');
+
 const app = express();
 
 app.use(cors({ origin: 'http://localhost:5173' }));
 app.use(express.json());
+
+// Serve uploaded product images
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Public routes
 app.use('/api/auth', authRoutes);

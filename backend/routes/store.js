@@ -2,55 +2,79 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
 
-// GET /api/store/products
+// GET /api/store/products — with filters, sort, pagination
 router.get('/products', (req, res) => {
-  const { kategoria_id, search } = req.query;
+  const { kategoria_id, search, min_cmimi, max_cmimi, sort, page = 1, limit = 12 } = req.query;
 
-  let sql = `
-    SELECT 
-      p.id, p.emri, p.marka, p.modeli, p.pershkrimi,
-      p.cmimi, p.cmimi_zbritjes, p.sasia_stokut,
-      p.garancia_muaj, p.foto_kryesore,
-      c.emertimi AS kategoria
-    FROM products p
-    LEFT JOIN categories c ON p.kategoria_id = c.id
-    WHERE 1=1
-  `;
-
+  const offset = (parseInt(page) - 1) * parseInt(limit);
   const params = [];
+  const countParams = [];
+
+  let where = 'WHERE 1=1';
 
   if (kategoria_id) {
-    sql += ' AND p.kategoria_id = ?';
+    where += ' AND p.kategoria_id = ?';
     params.push(kategoria_id);
+    countParams.push(kategoria_id);
   }
-
   if (search) {
-    sql += ' AND (p.emri LIKE ? OR p.marka LIKE ?)';
+    where += ' AND (p.emri LIKE ? OR p.marka LIKE ? OR p.modeli LIKE ?)';
     const term = `%${search}%`;
-    params.push(term, term);
+    params.push(term, term, term);
+    countParams.push(term, term, term);
+  }
+  if (min_cmimi) {
+    where += ' AND COALESCE(p.cmimi_zbritjes, p.cmimi) >= ?';
+    params.push(parseFloat(min_cmimi));
+    countParams.push(parseFloat(min_cmimi));
+  }
+  if (max_cmimi) {
+    where += ' AND COALESCE(p.cmimi_zbritjes, p.cmimi) <= ?';
+    params.push(parseFloat(max_cmimi));
+    countParams.push(parseFloat(max_cmimi));
   }
 
-  sql += ' ORDER BY p.id DESC';
+  let orderBy = 'ORDER BY p.id DESC';
+  if (sort === 'price_asc')  orderBy = 'ORDER BY COALESCE(p.cmimi_zbritjes, p.cmimi) ASC';
+  if (sort === 'price_desc') orderBy = 'ORDER BY COALESCE(p.cmimi_zbritjes, p.cmimi) DESC';
+  if (sort === 'name_asc')   orderBy = 'ORDER BY p.emri ASC';
+  if (sort === 'name_desc')  orderBy = 'ORDER BY p.emri DESC';
 
-  db.query(sql, params, (err, result) => {
+  const countSql = `SELECT COUNT(*) AS total FROM products p LEFT JOIN categories c ON p.kategoria_id = c.id ${where}`;
+  const dataSql = `
+    SELECT p.id, p.emri, p.marka, p.modeli, p.pershkrimi,
+           p.cmimi, p.cmimi_zbritjes, p.sasia_stokut,
+           p.garancia_muaj, p.foto_kryesore,
+           c.emertimi AS kategoria
+    FROM products p
+    LEFT JOIN categories c ON p.kategoria_id = c.id
+    ${where} ${orderBy}
+    LIMIT ? OFFSET ?
+  `;
+
+  db.query(countSql, countParams, (err, countResult) => {
     if (err) return res.status(500).json({ message: 'DB error', error: err.message });
-    res.json(result);
+    const total = countResult[0].total;
+
+    params.push(parseInt(limit), offset);
+    db.query(dataSql, params, (err, result) => {
+      if (err) return res.status(500).json({ message: 'DB error', error: err.message });
+      res.json({ products: result, total, page: parseInt(page), limit: parseInt(limit), pages: Math.ceil(total / parseInt(limit)) });
+    });
   });
 });
 
 // GET /api/store/products/:id
 router.get('/products/:id', (req, res) => {
   const sql = `
-    SELECT 
-      p.id, p.emri, p.marka, p.modeli, p.pershkrimi,
-      p.cmimi, p.cmimi_zbritjes, p.sasia_stokut,
-      p.garancia_muaj, p.foto_kryesore,
-      c.emertimi AS kategoria, c.id AS kategoria_id
+    SELECT p.id, p.emri, p.marka, p.modeli, p.pershkrimi,
+           p.cmimi, p.cmimi_zbritjes, p.sasia_stokut,
+           p.garancia_muaj, p.foto_kryesore,
+           c.emertimi AS kategoria, c.id AS kategoria_id
     FROM products p
     LEFT JOIN categories c ON p.kategoria_id = c.id
     WHERE p.id = ?
   `;
-
   db.query(sql, [req.params.id], (err, result) => {
     if (err) return res.status(500).json({ message: 'DB error', error: err.message });
     if (result.length === 0) return res.status(404).json({ message: 'Produkti nuk u gjet.' });
@@ -61,18 +85,24 @@ router.get('/products/:id', (req, res) => {
 // GET /api/store/categories
 router.get('/categories', (req, res) => {
   const sql = `
-    SELECT 
-      c.id, c.emertimi, c.pershkrimi,
-      COUNT(p.id) AS numri_produkteve
+    SELECT c.id, c.emertimi, c.pershkrimi,
+           COUNT(p.id) AS numri_produkteve
     FROM categories c
     LEFT JOIN products p ON c.id = p.kategoria_id
     GROUP BY c.id
     ORDER BY c.emertimi
   `;
-
   db.query(sql, (err, result) => {
     if (err) return res.status(500).json({ message: 'DB error', error: err.message });
     res.json(result);
+  });
+});
+
+// GET /api/store/price-range — min/max price for filter UI
+router.get('/price-range', (req, res) => {
+  db.query('SELECT MIN(COALESCE(cmimi_zbritjes, cmimi)) AS min_p, MAX(COALESCE(cmimi_zbritjes, cmimi)) AS max_p FROM products', (err, result) => {
+    if (err) return res.status(500).json({ message: 'DB error', error: err.message });
+    res.json({ min: Math.floor(result[0].min_p || 0), max: Math.ceil(result[0].max_p || 9999) });
   });
 });
 

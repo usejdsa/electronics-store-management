@@ -1,48 +1,21 @@
- -- ============================================================
--- EMS Migration v2 — E-Commerce Support
--- ============================================================
+-- Migration: Set foto_kryesore for existing products using uploaded images
+-- Run this if you already have the database set up and just need to update photo URLs
 
-USE `electronics_store`;
-
--- ─────────────────────────────────────────────────────
--- 1. Shto rolin Customer
--- ─────────────────────────────────────────────────────
-INSERT INTO `Roles` (`emertimi`, `pershkrimi`)
-VALUES ('Customer', 'Klient i regjistruar ne dyqan');
-
--- ─────────────────────────────────────────────────────
--- 2. Shto user_id në tabelën Customers
---    NULL = klient pa llogari (guest)
---    NOT NULL = klient i regjistruar
--- ─────────────────────────────────────────────────────
-ALTER TABLE `Customers`
-  ADD COLUMN `user_id` INT NULL AFTER `id`,
-  ADD CONSTRAINT `fk_customers_user`
-    FOREIGN KEY (`user_id`) REFERENCES `Users` (`id`)
-    ON DELETE SET NULL;
-
--- ─────────────────────────────────────────────────────
--- 3. Shto kolonën cart_session për guest users
---    Kjo na lejon të gjurmojmë porositë e guestëve
--- ─────────────────────────────────────────────────────
-ALTER TABLE `Orders`
-  ADD COLUMN `session_id` VARCHAR(255) NULL AFTER `user_id`;
-
--- ─────────────────────────────────────────────────────
--- 4. Shto kolonën source — nga ku erdhi porosia
---    'dashboard' = krijuar nga kasieri
---    'store'     = krijuar nga klienti online
--- ─────────────────────────────────────────────────────
-ALTER TABLE `Orders`
-  ADD COLUMN `source` ENUM('dashboard','store') NOT NULL DEFAULT 'dashboard' AFTER `statusi`;
-
--- ─────────────────────────────────────────────────────
--- VERIFIKIMI — duhet të shohësh të gjitha ndryshimet
--- ─────────────────────────────────────────────────────
-SELECT id, emertimi FROM Roles ORDER BY id;
-DESCRIBE Customers;
-DESCRIBE Orders;
-
--- ============================================================
--- FUND migration_v2.sql
--- ============================================================
+UPDATE `products` SET `foto_kryesore` = 'http://localhost:5000/uploads/SonyHeadphones.png'
+  WHERE `id` = 4;
+UPDATE `products` SET `foto_kryesore` = 'http://localhost:5000/uploads/Playstation5.png'
+  WHERE `id` = 5;
+UPDATE `products` SET `foto_kryesore` = 'http://localhost:5000/uploads/SamsungS24.avif'
+  WHERE `id` = 6;
+UPDATE `products` SET `foto_kryesore` = 'http://localhost:5000/uploads/WirelessMouse.webp'
+  WHERE `id` = 7;
+UPDATE `products` SET `foto_kryesore` = 'http://localhost:5000/uploads/SamsungLaptop.jpg'
+  WHERE `id` = 9;
+UPDATE `products` SET `foto_kryesore` = 'http://localhost:5000/uploads/Playstation5.png'
+  WHERE `id` = 12;
+UPDATE `products` SET `foto_kryesore` = 'http://localhost:5000/uploads/SamsungS24.avif'
+  WHERE `id` = 13;
+UPDATE `products` SET `foto_kryesore` = 'http://localhost:5000/uploads/WirelessMouse.webp'
+  WHERE `id` = 14;
+UPDATE `products` SET `foto_kryesore` = 'http://localhost:5000/uploads/LaptopUltrabook.png'
+  WHERE `id` = 15;

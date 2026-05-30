@@ -1,5 +1,7 @@
 import { Routes, Route, NavLink, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { CartProvider } from './context/CartContext';
+import { LangProvider } from './context/LangContext';
 import { useRole } from './hooks/useRole';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
@@ -176,7 +178,11 @@ function AppRoutes() {
 function App() {
   return (
     <AuthProvider>
-      <AppRoutes />
+      <LangProvider>
+        <CartProvider>
+          <AppRoutes />
+        </CartProvider>
+      </LangProvider>
     </AuthProvider>
   );
 }

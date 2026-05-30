@@ -243,7 +243,7 @@ CREATE TABLE `products` (
 
 LOCK TABLES `products` WRITE;
 /*!40000 ALTER TABLE `products` DISABLE KEYS */;
-INSERT INTO `products` VALUES (4,'Headphones',NULL,NULL,NULL,NULL,400.00,NULL,0,NULL,NULL),(5,'ps5',NULL,NULL,NULL,NULL,550.00,NULL,0,NULL,NULL),(6,'Samsung phone',NULL,NULL,NULL,NULL,400.00,NULL,0,NULL,NULL),(7,'Mouse',NULL,NULL,NULL,NULL,50.00,NULL,0,NULL,NULL),(9,'Laptop',NULL,NULL,NULL,NULL,800.00,NULL,0,NULL,NULL),(12,'PlayStation 5',4,'Sony',NULL,NULL,550.00,NULL,5,12,NULL),(13,'Samsung Galaxy S24',2,'Samsung',NULL,NULL,400.00,NULL,65,24,NULL),(14,'Wireless Mouse',6,'Logitech',NULL,NULL,50.00,NULL,29,12,NULL),(15,'Laptop UltraBook',3,'Dell',NULL,NULL,800.00,NULL,8,24,NULL),(20,'wtv',1,'sdf','sd','sdf',234.00,23.00,234,23,NULL);
+INSERT INTO `products` VALUES (4,'Headphones',NULL,NULL,NULL,NULL,400.00,NULL,0,NULL,'http://localhost:5000/uploads/SonyHeadphones.png'),(5,'ps5',NULL,NULL,NULL,NULL,550.00,NULL,0,NULL,'http://localhost:5000/uploads/Playstation5.png'),(6,'Samsung phone',NULL,NULL,NULL,NULL,400.00,NULL,0,NULL,'http://localhost:5000/uploads/SamsungS24.avif'),(7,'Mouse',NULL,NULL,NULL,NULL,50.00,NULL,0,NULL,'http://localhost:5000/uploads/WirelessMouse.webp'),(9,'Laptop',NULL,NULL,NULL,NULL,800.00,NULL,0,NULL,'http://localhost:5000/uploads/SamsungLaptop.jpg'),(12,'PlayStation 5',4,'Sony',NULL,NULL,550.00,NULL,5,12,'http://localhost:5000/uploads/Playstation5.png'),(13,'Samsung Galaxy S24',2,'Samsung',NULL,NULL,400.00,NULL,65,24,'http://localhost:5000/uploads/SamsungS24.avif'),(14,'Wireless Mouse',6,'Logitech',NULL,NULL,50.00,NULL,29,12,'http://localhost:5000/uploads/WirelessMouse.webp'),(15,'Laptop UltraBook',3,'Dell',NULL,NULL,800.00,NULL,8,24,'http://localhost:5000/uploads/LaptopUltrabook.png'),(20,'wtv',1,'sdf','sd','sdf',234.00,23.00,234,23,NULL);
 /*!40000 ALTER TABLE `products` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -521,4 +521,16 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
+
 -- Dump completed on 2026-05-23 15:12:48
+
+-- Update foto_kryesore for existing products to use uploaded images
+UPDATE `products` SET `foto_kryesore` = 'http://localhost:5000/uploads/SonyHeadphones.png' WHERE `id` = 4 AND (`foto_kryesore` IS NULL OR `foto_kryesore` = '');
+UPDATE `products` SET `foto_kryesore` = 'http://localhost:5000/uploads/Playstation5.png' WHERE `id` = 5 AND (`foto_kryesore` IS NULL OR `foto_kryesore` = '');
+UPDATE `products` SET `foto_kryesore` = 'http://localhost:5000/uploads/SamsungS24.avif' WHERE `id` = 6 AND (`foto_kryesore` IS NULL OR `foto_kryesore` = '');
+UPDATE `products` SET `foto_kryesore` = 'http://localhost:5000/uploads/WirelessMouse.webp' WHERE `id` = 7 AND (`foto_kryesore` IS NULL OR `foto_kryesore` = '');
+UPDATE `products` SET `foto_kryesore` = 'http://localhost:5000/uploads/SamsungLaptop.jpg' WHERE `id` = 9 AND (`foto_kryesore` IS NULL OR `foto_kryesore` = '');
+UPDATE `products` SET `foto_kryesore` = 'http://localhost:5000/uploads/Playstation5.png' WHERE `id` = 12 AND (`foto_kryesore` IS NULL OR `foto_kryesore` = '');
+UPDATE `products` SET `foto_kryesore` = 'http://localhost:5000/uploads/SamsungS24.avif' WHERE `id` = 13 AND (`foto_kryesore` IS NULL OR `foto_kryesore` = '');
+UPDATE `products` SET `foto_kryesore` = 'http://localhost:5000/uploads/WirelessMouse.webp' WHERE `id` = 14 AND (`foto_kryesore` IS NULL OR `foto_kryesore` = '');
+UPDATE `products` SET `foto_kryesore` = 'http://localhost:5000/uploads/LaptopUltrabook.png' WHERE `id` = 15 AND (`foto_kryesore` IS NULL OR `foto_kryesore` = '');

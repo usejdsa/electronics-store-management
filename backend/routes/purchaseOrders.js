@@ -5,14 +5,18 @@ const verifyToken = require('../middleware/auth');
 const checkRole = require('../middleware/checkRole');
 
 router.get('/', verifyToken, checkRole(['Admin']), (req, res) => {
+  const { supplier_id } = req.query;
+  const where = supplier_id ? 'WHERE po.supplier_id = ?' : '';
+  const params = supplier_id ? [supplier_id] : [];
   const sql = `
     SELECT po.*, s.emri_kompanise, p.emri AS produkt_emri
     FROM PurchaseOrders po
     LEFT JOIN Suppliers s ON po.supplier_id = s.id
     LEFT JOIN Products p ON po.product_id = p.id
+    ${where}
     ORDER BY po.created_at DESC
   `;
-  db.query(sql, (err, result) => {
+  db.query(sql, params, (err, result) => {
     if (err) return res.status(500).json({ message: 'DB error', error: err });
     res.json(result);
   });

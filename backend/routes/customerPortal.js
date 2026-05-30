@@ -131,7 +131,7 @@ router.post('/orders', (req, res) => {
     const productIds = produktet.map(p => p.product_id);
 
     db.query(
-      'SELECT id, emri, cmimi, cmimi_zbritjes, sasia_stokut FROM Products WHERE id IN (?) AND is_active = 1',
+      'SELECT id, emri, cmimi, cmimi_zbritjes, sasia_stokut FROM Products WHERE id IN (?) AND 1=1',
       [productIds],
       (err, products) => {
         if (err) return res.status(500).json({ message: 'DB error', error: err });
