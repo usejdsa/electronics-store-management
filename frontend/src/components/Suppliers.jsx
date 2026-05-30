@@ -1,38 +1,42 @@
 import { useEffect, useState } from 'react';
 import api from '../api/axios';
 import { useRole } from '../hooks/useRole';
+import Modal from './Modal';
 
 const empty = { emri_kompanise: '', kontakti: '', email: '', telefoni: '', adresa: '' };
+const inp = { width: '100%', padding: '9px 12px', border: '1px solid #e2e8f0', borderRadius: 8, fontSize: 14, outline: 'none', boxSizing: 'border-box', marginBottom: 12 };
+const label = { display: 'block', fontSize: 13, fontWeight: 500, color: '#374151', marginBottom: 4 };
+const STATUS_COLOR = { draft:'#f1f5f9', ordered:'#dbeafe', received:'#dcfce7', cancelled:'#fee2e2' };
+const STATUS_TEXT  = { draft:'#475569', ordered:'#1d4ed8', received:'#15803d', cancelled:'#dc2626' };
 
 function Suppliers() {
-  const [suppliers, setSuppliers]   = useState([]);
-  const [editId, setEditId]         = useState(null);
-  const [form, setForm]             = useState(empty);
-  const [expandedId, setExpandedId] = useState(null); // supplier whose PO history is shown
-  const [history, setHistory]       = useState({});   // { [supplierId]: [...orders] }
+  const [suppliers, setSuppliers] = useState([]);
+  const [editId, setEditId] = useState(null);
+  const [form, setForm] = useState(empty);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [expandedId, setExpandedId] = useState(null);
+  const [history, setHistory] = useState({});
   const { can } = useRole();
   const canMutate = can('mutate:suppliers');
 
-  const fetchSuppliers = () =>
-    api.get('/suppliers').then(r => setSuppliers(r.data)).catch(console.error);
+  const fetchSuppliers = () => api.get('/suppliers').then(r => setSuppliers(r.data)).catch(console.error);
 
   useEffect(() => { fetchSuppliers(); }, []);
 
   const set = f => e => setForm(prev => ({ ...prev, [f]: e.target.value }));
 
+  const openAdd = () => { setEditId(null); setForm(empty); setModalOpen(true); };
+  const openEdit = (s) => { setEditId(s.id); setForm({ emri_kompanise: s.emri_kompanise || '', kontakti: s.kontakti || '', email: s.email || '', telefoni: s.telefoni || '', adresa: s.adresa || '' }); setModalOpen(true); };
+  const closeModal = () => { setModalOpen(false); setEditId(null); setForm(empty); };
+
   const handleSubmit = e => {
     e.preventDefault();
     const req = editId ? api.put(`/suppliers/${editId}`, form) : api.post('/suppliers', form);
-    req.then(() => { setEditId(null); setForm(empty); fetchSuppliers(); }).catch(console.error);
-  };
-
-  const handleEdit = s => {
-    setEditId(s.id);
-    setForm({ emri_kompanise: s.emri_kompanise||'', kontakti: s.kontakti||'', email: s.email||'', telefoni: s.telefoni||'', adresa: s.adresa||'' });
+    req.then(() => { closeModal(); fetchSuppliers(); }).catch(console.error);
   };
 
   const handleDelete = id => {
-    if (!window.confirm('Delete this supplier?')) return;
+    if (!window.confirm('Fshi këtë furnitor?')) return;
     api.delete(`/suppliers/${id}`).then(fetchSuppliers).catch(console.error);
   };
 
@@ -45,94 +49,87 @@ function Suppliers() {
     }
   };
 
-  const STATUS_COLOR = { draft:'#f1f5f9', ordered:'#dbeafe', received:'#dcfce7', cancelled:'#fee2e2' };
-  const STATUS_TEXT  = { draft:'#475569', ordered:'#1d4ed8', received:'#15803d', cancelled:'#dc2626' };
-
   return (
     <div>
-      <h2>Suppliers</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+        <div>
+          <h1 style={{ margin: '0 0 4px', fontSize: 22, fontWeight: 700, color: '#0f172a' }}>Furnitorët</h1>
+          <p style={{ margin: 0, color: '#64748b', fontSize: 13 }}>{suppliers.length} furnitorë gjithsej</p>
+        </div>
+        {canMutate && (
+          <button onClick={openAdd} style={{ padding: '9px 20px', background: '#4f46e5', color: 'white', border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
+            + Shto Furnitor
+          </button>
+        )}
+      </div>
 
-      {canMutate && (
-        <>
-          {editId && (
-            <div style={{ background:'#fef3c7', border:'1px solid #f59e0b', borderRadius:8, padding:'8px 14px', marginBottom:10, display:'flex', justifyContent:'space-between', alignItems:'center', fontSize:13 }}>
-              <span>Editing supplier #{editId}</span>
-              <button onClick={() => { setEditId(null); setForm(empty); }} style={{ background:'none', border:'none', color:'#92400e', cursor:'pointer', textDecoration:'underline' }}>Cancel</button>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {suppliers.map(s => (
+          <div key={s.id} style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: 12, overflow: 'hidden' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 18px' }}>
+              <div style={{ width: 40, height: 40, background: '#e0e7ff', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>🏭</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 600, color: '#0f172a', fontSize: 15 }}>{s.emri_kompanise}</div>
+                <div style={{ color: '#64748b', fontSize: 13 }}>
+                  {[s.kontakti, s.email, s.telefoni].filter(Boolean).join(' · ')}
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: 6 }}>
+                <button onClick={() => toggleHistory(s.id)} style={{ padding: '5px 12px', borderRadius: 8, border: '1px solid #e2e8f0', background: expandedId === s.id ? '#eef2ff' : 'white', color: expandedId === s.id ? '#4f46e5' : '#64748b', fontSize: 12, cursor: 'pointer' }}>
+                  {expandedId === s.id ? 'Fshih Porosite' : 'Shiko Porosite'}
+                </button>
+                {canMutate && (
+                  <>
+                    <button onClick={() => openEdit(s)} style={{ padding: '5px 12px', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 8, color: '#1d4ed8', fontSize: 12, cursor: 'pointer' }}>Ndrysho</button>
+                    <button onClick={() => handleDelete(s.id)} style={{ padding: '5px 12px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, color: '#dc2626', fontSize: 12, cursor: 'pointer' }}>Fshi</button>
+                  </>
+                )}
+              </div>
             </div>
-          )}
-          <form onSubmit={handleSubmit}>
-            <input required placeholder="Company name *" value={form.emri_kompanise} onChange={set('emri_kompanise')} />
-            <input placeholder="Contact person"          value={form.kontakti}       onChange={set('kontakti')} />
-            <input type="email" placeholder="Email"      value={form.email}          onChange={set('email')} />
-            <input placeholder="Phone"                   value={form.telefoni}       onChange={set('telefoni')} />
-            <input placeholder="Address"                 value={form.adresa}         onChange={set('adresa')} />
-            <button type="submit" className="btn-add">{editId ? 'Update Supplier' : 'Add Supplier'}</button>
-          </form>
-        </>
-      )}
-
-      {suppliers.map(s => (
-        <div key={s.id}>
-          <div className="list-row" style={{ display:'flex', alignItems:'center', gap:8 }}>
-            <div style={{ flex:1 }}>
-              <span style={{ fontWeight:600 }}>{s.emri_kompanise}</span>
-              {s.kontakti && <span style={{ color:'#64748b', marginLeft:8 }}>· {s.kontakti}</span>}
-              {s.email    && <span style={{ color:'#64748b', marginLeft:8 }}>· {s.email}</span>}
-              {s.telefoni && <span style={{ color:'#64748b', marginLeft:8 }}>· {s.telefoni}</span>}
-            </div>
-            <button
-              onClick={() => toggleHistory(s.id)}
-              style={{ fontSize:12, padding:'4px 10px', borderRadius:8, border:'1px solid #e2e8f0', background: expandedId===s.id ? '#eef2ff':'white', color: expandedId===s.id ? '#4f46e5':'#64748b', cursor:'pointer' }}
-            >
-              {expandedId === s.id ? 'Hide orders' : 'View orders'}
-            </button>
-            {canMutate && (
-              <span>
-                <button className="btn-edit"   onClick={() => handleEdit(s)}>Edit</button>
-                <button className="btn-delete" onClick={() => handleDelete(s.id)}>Delete</button>
-              </span>
+            {expandedId === s.id && (
+              <div style={{ background: '#f8fafc', borderTop: '1px solid #f1f5f9', padding: '12px 18px' }}>
+                {!history[s.id] ? <div style={{ color: '#94a3b8', fontSize: 13 }}>Duke ngarkuar...</div>
+                  : history[s.id].length === 0 ? <div style={{ color: '#94a3b8', fontSize: 13 }}>Nuk ka porosi furnizimi.</div>
+                  : (
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                      <thead><tr style={{ color: '#94a3b8' }}>
+                        {['#','Produkti','Sasia','Totali','Statusi','Data'].map(h => <th key={h} style={{ padding: '4px 8px', textAlign: 'left', fontWeight: 600 }}>{h}</th>)}
+                      </tr></thead>
+                      <tbody>
+                        {history[s.id].map(o => (
+                          <tr key={o.id} style={{ borderTop: '1px solid #e2e8f0' }}>
+                            <td style={{ padding: '6px 8px', color: '#94a3b8' }}>#{o.id}</td>
+                            <td style={{ padding: '6px 8px' }}>{o.produkt_emri}</td>
+                            <td style={{ padding: '6px 8px' }}>{o.sasia}</td>
+                            <td style={{ padding: '6px 8px', fontWeight: 600 }}>{parseFloat(o.totali).toFixed(2)}€</td>
+                            <td style={{ padding: '6px 8px' }}><span style={{ background: STATUS_COLOR[o.statusi] || '#f1f5f9', color: STATUS_TEXT[o.statusi] || '#475569', borderRadius: 6, padding: '2px 8px', fontSize: 11, fontWeight: 700 }}>{o.statusi}</span></td>
+                            <td style={{ padding: '6px 8px', color: '#94a3b8' }}>{new Date(o.created_at).toLocaleDateString('sq-AL')}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+              </div>
             )}
           </div>
+        ))}
+      </div>
 
-          {/* Purchase history inline */}
-          {expandedId === s.id && (
-            <div style={{ background:'#f8fafc', border:'1px solid #e2e8f0', borderRadius:8, margin:'0 0 8px 0', padding:'12px 16px' }}>
-              {!history[s.id] ? (
-                <span style={{ fontSize:13, color:'#94a3b8' }}>Loading...</span>
-              ) : history[s.id].length === 0 ? (
-                <span style={{ fontSize:13, color:'#94a3b8' }}>No purchase orders yet.</span>
-              ) : (
-                <table style={{ width:'100%', borderCollapse:'collapse', fontSize:13 }}>
-                  <thead>
-                    <tr style={{ color:'#94a3b8', textAlign:'left' }}>
-                      <th style={{ padding:'4px 8px', fontWeight:600 }}>#</th>
-                      <th style={{ padding:'4px 8px', fontWeight:600 }}>Product</th>
-                      <th style={{ padding:'4px 8px', fontWeight:600 }}>Qty</th>
-                      <th style={{ padding:'4px 8px', fontWeight:600 }}>Total</th>
-                      <th style={{ padding:'4px 8px', fontWeight:600 }}>Status</th>
-                      <th style={{ padding:'4px 8px', fontWeight:600 }}>Date</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {history[s.id].map(o => (
-                      <tr key={o.id} style={{ borderTop:'1px solid #e2e8f0' }}>
-                        <td style={{ padding:'6px 8px', color:'#94a3b8' }}>#{o.id}</td>
-                        <td style={{ padding:'6px 8px' }}>{o.produkt_emri}</td>
-                        <td style={{ padding:'6px 8px' }}>{o.sasia}</td>
-                        <td style={{ padding:'6px 8px', fontWeight:600 }}>{parseFloat(o.totali).toFixed(2)}€</td>
-                        <td style={{ padding:'6px 8px' }}>
-                          <span style={{ background: STATUS_COLOR[o.statusi]||'#f1f5f9', color: STATUS_TEXT[o.statusi]||'#475569', borderRadius:6, padding:'2px 8px', fontSize:11, fontWeight:700 }}>{o.statusi}</span>
-                        </td>
-                        <td style={{ padding:'6px 8px', color:'#94a3b8' }}>{new Date(o.created_at).toLocaleDateString()}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </div>
-          )}
-        </div>
-      ))}
+      <Modal isOpen={modalOpen} onClose={closeModal} title={editId ? 'Ndrysho Furnitorin' : 'Shto Furnitor të Ri'}>
+        <form onSubmit={handleSubmit}>
+          <div><label style={label}>Emri i Kompanisë *</label><input required style={inp} value={form.emri_kompanise} onChange={set('emri_kompanise')} placeholder="p.sh. TechSupply SH.P.K" /></div>
+          <div><label style={label}>Kontakti</label><input style={inp} value={form.kontakti} onChange={set('kontakti')} placeholder="Besnik Krasniqi" /></div>
+          <div><label style={label}>Email</label><input type="email" style={inp} value={form.email} onChange={set('email')} placeholder="info@supplier.com" /></div>
+          <div><label style={label}>Telefoni</label><input style={inp} value={form.telefoni} onChange={set('telefoni')} placeholder="+383 44 000 000" /></div>
+          <div><label style={label}>Adresa</label><input style={inp} value={form.adresa} onChange={set('adresa')} placeholder="Rruga Prishtina, Nr. 1" /></div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button type="submit" style={{ flex: 1, padding: 11, background: '#4f46e5', border: 'none', borderRadius: 10, color: 'white', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>
+              {editId ? 'Ruaj Ndryshimet' : 'Shto Furnitorin'}
+            </button>
+            <button type="button" onClick={closeModal} style={{ padding: '11px 20px', background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 10, color: '#64748b', fontSize: 14, cursor: 'pointer' }}>Anulo</button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }
