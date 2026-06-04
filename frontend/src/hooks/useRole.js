@@ -5,9 +5,9 @@ export function useRole() {
   const roles = user?.roles || [];
 
   const is = (role) => roles.includes(role);
-  const isAdmin = is('Admin');
+  const isAdmin      = is('Admin');
   const isTechnician = is('Technician');
-  const isCashier = is('Cashier');
+  const isCashier    = is('Cashier');
 
   const can = (action) => {
     switch (action) {
@@ -39,6 +39,13 @@ export function useRole() {
 
       case 'view:inventory':         return isAdmin || isTechnician;
       case 'mutate:inventory':       return isAdmin;
+
+      // ── Route-t që mungonin ──────────────────────────────────
+      case 'view:service-requests':  return isAdmin || isTechnician;
+      case 'mutate:service-requests': return isAdmin || isTechnician;
+
+      case 'view:product-reviews':   return isAdmin;
+      // ─────────────────────────────────────────────────────────
 
       case 'view:users':             return isAdmin;
 
