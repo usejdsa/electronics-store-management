@@ -12,10 +12,11 @@ router.get('/products', (req, res) => {
 
   let where = 'WHERE 1=1';
 
+  // Support parent categories: if selected category has children, include all children too
   if (kategoria_id) {
-    where += ' AND p.kategoria_id = ?';
-    params.push(kategoria_id);
-    countParams.push(kategoria_id);
+    where += ' AND (p.kategoria_id = ? OR c.kategoria_prind_id = ?)';
+    params.push(kategoria_id, kategoria_id);
+    countParams.push(kategoria_id, kategoria_id);
   }
   if (search) {
     where += ' AND (p.emri LIKE ? OR p.marka LIKE ? OR p.modeli LIKE ?)';
@@ -82,15 +83,19 @@ router.get('/products/:id', (req, res) => {
   });
 });
 
-// GET /api/store/categories
+// GET /api/store/categories — includes product count for parent categories (counts children too)
 router.get('/categories', (req, res) => {
   const sql = `
-    SELECT c.id, c.emertimi, c.pershkrimi,
-           COUNT(p.id) AS numri_produkteve
+    SELECT c.id, c.emertimi, c.pershkrimi, c.kategoria_prind_id,
+           (
+             SELECT COUNT(*)
+             FROM products p2
+             LEFT JOIN categories c2 ON p2.kategoria_id = c2.id
+             WHERE p2.kategoria_id = c.id
+                OR c2.kategoria_prind_id = c.id
+           ) AS numri_produkteve
     FROM categories c
-    LEFT JOIN products p ON c.id = p.kategoria_id
-    GROUP BY c.id
-    ORDER BY c.emertimi
+    ORDER BY COALESCE(c.kategoria_prind_id, c.id), c.id
   `;
   db.query(sql, (err, result) => {
     if (err) return res.status(500).json({ message: 'DB error', error: err.message });

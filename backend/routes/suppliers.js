@@ -12,12 +12,12 @@ router.get('/', verifyToken, checkRole(['Admin']), (req, res) => {
 });
 
 router.post('/', verifyToken, checkRole(['Admin']), (req, res) => {
-  const { emri_kompanise, kontakti, email, telefoni, adresa } = req.body;
+  const { emri_kompanise, kontakti, email, telefoni, adresa, vendi } = req.body;
   if (!emri_kompanise) return res.status(400).json({ message: 'Emri i kompanisë është i detyrueshëm.' });
 
   db.query(
-    'INSERT INTO Suppliers (emri_kompanise, kontakti, email, telefoni, adresa) VALUES (?, ?, ?, ?, ?)',
-    [emri_kompanise, kontakti || null, email || null, telefoni || null, adresa || null],
+    'INSERT INTO Suppliers (emri_kompanise, kontakti, email, telefoni, adresa, vendi) VALUES (?, ?, ?, ?, ?, ?)',
+    [emri_kompanise, kontakti || null, email || null, telefoni || null, adresa || null, vendi || null],
     (err, result) => {
       if (err) return res.status(500).json({ message: 'DB error', error: err });
       res.status(201).json({ message: 'Furnizuesi u shtua.', id: result.insertId });
@@ -26,12 +26,12 @@ router.post('/', verifyToken, checkRole(['Admin']), (req, res) => {
 });
 
 router.put('/:id', verifyToken, checkRole(['Admin']), (req, res) => {
-  const { emri_kompanise, kontakti, email, telefoni, adresa } = req.body;
+  const { emri_kompanise, kontakti, email, telefoni, adresa, vendi } = req.body;
   if (!emri_kompanise) return res.status(400).json({ message: 'Emri i kompanisë është i detyrueshëm.' });
 
   db.query(
-    'UPDATE Suppliers SET emri_kompanise = ?, kontakti = ?, email = ?, telefoni = ?, adresa = ? WHERE id = ?',
-    [emri_kompanise, kontakti || null, email || null, telefoni || null, adresa || null, req.params.id],
+    'UPDATE Suppliers SET emri_kompanise = ?, kontakti = ?, email = ?, telefoni = ?, adresa = ?, vendi = ? WHERE id = ?',
+    [emri_kompanise, kontakti || null, email || null, telefoni || null, adresa || null, vendi || null, req.params.id],
     (err, result) => {
       if (err) return res.status(500).json({ message: 'DB error', error: err });
       if (result.affectedRows === 0) return res.status(404).json({ message: 'Furnizuesi nuk u gjet.' });

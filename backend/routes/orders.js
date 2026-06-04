@@ -36,12 +36,12 @@ router.get('/:id', verifyToken, checkRole(['Admin', 'Cashier']), (req, res) => {
 });
 
 router.post('/', verifyToken, checkRole(['Admin', 'Cashier']), (req, res) => {
-  const { customer_id, statusi, totali, shenime } = req.body;
+  const { customer_id, statusi, totali, shenime, metoda_pageses, adresa_dorezimit } = req.body;
   if (!customer_id) return res.status(400).json({ message: 'customer_id eshte i detyrueshme.' });
 
   db.query(
-    'INSERT INTO Orders (customer_id, statusi, totali, shenime) VALUES (?, ?, ?, ?)',
-    [customer_id, statusi || 'pending', totali || 0, shenime || null],
+    'INSERT INTO Orders (customer_id, statusi, totali, shenime, metoda_pageses, adresa_dorezimit) VALUES (?, ?, ?, ?, ?, ?)',
+    [customer_id, statusi || 'pending', totali || 0, shenime || null, metoda_pageses || null, adresa_dorezimit || null],
     (err, result) => {
       if (err) return res.status(500).json({ message: 'DB error', error: err });
       res.status(201).json({ message: 'Porosia u shtua.', id: result.insertId });
@@ -50,15 +50,15 @@ router.post('/', verifyToken, checkRole(['Admin', 'Cashier']), (req, res) => {
 });
 
 router.put('/:id', verifyToken, checkRole(['Admin', 'Cashier']), (req, res) => {
-  const { customer_id, statusi, totali, shenime } = req.body;
+  const { customer_id, statusi, totali, shenime, metoda_pageses, adresa_dorezimit } = req.body;
   if (!customer_id) return res.status(400).json({ message: 'customer_id eshte i detyrueshme.' });
 
   const validStatuses = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'];
   if (statusi && !validStatuses.includes(statusi)) return res.status(400).json({ message: 'Status i pavlefshme.' });
 
   db.query(
-    'UPDATE Orders SET customer_id = ?, statusi = ?, totali = ?, shenime = ? WHERE id = ?',
-    [customer_id, statusi || 'pending', totali || 0, shenime || null, req.params.id],
+    'UPDATE Orders SET customer_id = ?, statusi = ?, totali = ?, shenime = ?, metoda_pageses = ?, adresa_dorezimit = ? WHERE id = ?',
+    [customer_id, statusi || 'pending', totali || 0, shenime || null, metoda_pageses || null, adresa_dorezimit || null, req.params.id],
     (err, result) => {
       if (err) return res.status(500).json({ message: 'DB error', error: err });
       if (result.affectedRows === 0) return res.status(404).json({ message: 'Porosia nuk u gjet.' });

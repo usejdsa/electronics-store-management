@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useLang } from '../context/LangContext';
 import api from '../api/axios';
 
 const ROLES = [
@@ -18,6 +19,7 @@ const ROLE_COLORS = {
 const emptyForm = { emri: '', mbiemri: '', email: '', password: '', role_id: '2' };
 
 function UserManagement() {
+  const { t } = useLang();
   const [users, setUsers] = useState([]);
   const [form, setForm] = useState(emptyForm);
   const [formError, setFormError] = useState('');

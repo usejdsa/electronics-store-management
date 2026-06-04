@@ -46,4 +46,52 @@ router.post('/', verifyToken, checkRole(['Admin']), (req, res) => {
   );
 });
 
+
+// PUT — edit a manual correction entry (only Manual type, Admin only)
+router.put('/:id', verifyToken, checkRole(['Admin']), (req, res) => {
+  const { sasia, shenime } = req.body;
+  if (!sasia) return res.status(400).json({ message: 'sasia eshte e detyrueshme.' });
+
+  // Only allow editing Manual entries
+  db.query('SELECT * FROM Inventory WHERE id = ? AND referenca_lloji = "Manual"', [req.params.id], (err, rows) => {
+    if (err) return res.status(500).json({ message: 'DB error', error: err });
+    if (rows.length === 0) return res.status(403).json({ message: 'Vetem hyrjet manuale mund te ndryshohen.' });
+
+    const old = rows[0];
+    const diff = Number(sasia) - old.sasia;
+    const operator = old.lloji === 'hyrje' ? '+' : '-';
+
+    db.query('UPDATE Inventory SET sasia = ?, shenime = ? WHERE id = ?',
+      [sasia, shenime || null, req.params.id], (err) => {
+        if (err) return res.status(500).json({ message: 'DB error', error: err });
+        // Adjust product stock by the difference
+        if (diff !== 0) {
+          const stockOp = (old.lloji === 'hyrje' ? '+' : '-');
+          db.query(`UPDATE Products SET sasia_stokut = sasia_stokut ${stockOp} ? WHERE id = ?`,
+            [Math.abs(diff), old.product_id]);
+        }
+        res.json({ message: 'Hyrja u perditesua.' });
+      }
+    );
+  });
+});
+
+// DELETE — only Manual entries, Admin only
+router.delete('/:id', verifyToken, checkRole(['Admin']), (req, res) => {
+  db.query('SELECT * FROM Inventory WHERE id = ? AND referenca_lloji = "Manual"', [req.params.id], (err, rows) => {
+    if (err) return res.status(500).json({ message: 'DB error', error: err });
+    if (rows.length === 0) return res.status(403).json({ message: 'Vetem hyrjet manuale mund te fshihen.' });
+
+    const entry = rows[0];
+    db.query('DELETE FROM Inventory WHERE id = ?', [req.params.id], (err) => {
+      if (err) return res.status(500).json({ message: 'DB error', error: err });
+      // Reverse the stock effect
+      const reverseOp = entry.lloji === 'hyrje' ? '-' : '+';
+      db.query(`UPDATE Products SET sasia_stokut = sasia_stokut ${reverseOp} ? WHERE id = ?`,
+        [entry.sasia, entry.product_id]);
+      res.json({ message: 'Hyrja u fshi.' });
+    });
+  });
+});
+
 module.exports = router;

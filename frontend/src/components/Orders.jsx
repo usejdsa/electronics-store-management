@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useLang } from '../context/LangContext';
 import api from '../api/axios';
 import { useRole } from '../hooks/useRole';
 import Modal from './Modal';
@@ -16,6 +17,7 @@ function Orders() {
   const [form, setForm] = useState(empty);
   const [modalOpen, setModalOpen] = useState(false);
   const [filterStatus, setFilterStatus] = useState('');
+  const { t } = useLang();
   const { can } = useRole();
   const canMutate = can('mutate:orders');
   const canDelete = can('delete:orders');
@@ -45,7 +47,7 @@ function Orders() {
   };
 
   const handleDelete = (id) => {
-    if (!window.confirm('Fshi këtë porosi?')) return;
+    if (!window.confirm(t.confirmDeleteOrder)) return;
     api.delete(`/orders/${id}`).then(fetchOrders).catch(console.error);
   };
 
@@ -60,7 +62,7 @@ function Orders() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
         <div>
           <h1 style={{ margin: '0 0 4px', fontSize: 22, fontWeight: 700, color: '#0f172a' }}>Porosite</h1>
-          <p style={{ margin: 0, color: '#64748b', fontSize: 13 }}>{orders.length} porosi gjithsej</p>
+          <p style={{ margin: 0, color: '#64748b', fontSize: 13 }}>{orders.length} {t.ordersCount}</p>
         </div>
         {canMutate && (
           <button onClick={openAdd} style={{ padding: '9px 20px', background: '#4f46e5', color: 'white', border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
@@ -112,8 +114,8 @@ function Orders() {
                   <td style={{ padding: '12px 16px', fontWeight: 700, color: '#0f172a' }}>{parseFloat(o.totali || 0).toFixed(2)}€</td>
                   <td style={{ padding: '12px 16px', color: '#94a3b8', fontSize: 13 }}>{new Date(o.created_at).toLocaleDateString('sq-AL')}</td>
                   <td style={{ padding: '12px 16px' }}>
-                    {canMutate && <button onClick={() => openEdit(o)} style={{ padding: '4px 12px', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 6, color: '#1d4ed8', fontSize: 12, cursor: 'pointer', marginRight: 6 }}>Ndrysho</button>}
-                    {canDelete && <button onClick={() => handleDelete(o.id)} style={{ padding: '4px 12px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 6, color: '#dc2626', fontSize: 12, cursor: 'pointer' }}>Fshi</button>}
+                    {canMutate && <button onClick={() => openEdit(o)} style={{ padding: '4px 12px', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 6, color: '#1d4ed8', fontSize: 12, cursor: 'pointer', marginRight: 6 }}>{t.edit}</button>}
+                    {canDelete && <button onClick={() => handleDelete(o.id)} style={{ padding: '4px 12px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 6, color: '#dc2626', fontSize: 12, cursor: 'pointer' }}>{t.delete}</button>}
                   </td>
                 </tr>
               );
@@ -122,7 +124,7 @@ function Orders() {
         </table>
       </div>
 
-      <Modal isOpen={modalOpen} onClose={closeModal} title={editId ? 'Ndrysho Porosinë' : 'Shto Porosi të Re'}>
+      <Modal isOpen={modalOpen} onClose={closeModal} title={editId ? t.editOrder : t.newOrder}>
         <form onSubmit={handleSubmit}>
           <div>
             <label style={label}>Klienti *</label>
@@ -137,13 +139,13 @@ function Orders() {
               {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
           </div>
-          <div><label style={label}>Totali (€)</label><input type="number" step="0.01" style={inp} value={form.totali} onChange={set('totali')} placeholder="0.00" /></div>
-          <div><label style={label}>Shënime</label><textarea style={{ ...inp, minHeight: 72, resize: 'vertical' }} value={form.shenime} onChange={set('shenime')} placeholder="Shënime shtesë..." /></div>
+          <div><label style={label}>{t.totalAmount}</label><input type="number" step="0.01" style={inp} value={form.totali} onChange={set('totali')} placeholder="0.00" /></div>
+          <div><label style={label}>{t.notes}</label><textarea style={{ ...inp, minHeight: 72, resize: 'vertical' }} value={form.shenime} onChange={set('shenime')} placeholder="Shënime shtesë..." /></div>
           <div style={{ display: 'flex', gap: 8 }}>
             <button type="submit" style={{ flex: 1, padding: 11, background: '#4f46e5', border: 'none', borderRadius: 10, color: 'white', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>
-              {editId ? 'Ruaj Ndryshimet' : 'Shto Porosinë'}
+              {editId ? t.saveChanges : t.addOrder}
             </button>
-            <button type="button" onClick={closeModal} style={{ padding: '11px 20px', background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 10, color: '#64748b', fontSize: 14, cursor: 'pointer' }}>Anulo</button>
+            <button type="button" onClick={closeModal} style={{ padding: '11px 20px', background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 10, color: '#64748b', fontSize: 14, cursor: 'pointer' }}>{t.cancel}</button>
           </div>
         </form>
       </Modal>

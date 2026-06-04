@@ -660,9 +660,9 @@ function About() {
     { icon: shieldIcon,      title: t.val6t, desc: t.val6d },
   ];
   const team = [
-    { name: 'Besnik Krasniqi', role: 'CEO & Themelues',    initials: 'BK', color: 'linear-gradient(135deg,#6366f1,#4f46e5)' },
-    { name: 'Ardita Hoxha',    role: 'Menaxhere Teknike',  initials: 'AH', color: 'linear-gradient(135deg,#8b5cf6,#7c3aed)' },
-    { name: 'Liridon Berisha', role: 'Specialist Shitjesh', initials: 'LB', color: 'linear-gradient(135deg,#06b6d4,#0284c7)' },
+    { name: 'Usejd Salihu', role: 'Themelues',    initials: 'US', color: 'linear-gradient(135deg,#6366f1,#4f46e5)' },
+    { name: 'Auron Hajrullahu',    role: 'Themelues',  initials: 'AH', color: 'linear-gradient(135deg,#8b5cf6,#7c3aed)' },
+    { name: 'Shpat Shala', role: 'Themelues', initials: 'SS', color: 'linear-gradient(135deg,#06b6d4,#0284c7)' },
   ];
   return (
     <section style={{ minHeight: '100vh' }}>

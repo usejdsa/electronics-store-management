@@ -2,6 +2,9 @@ import { useEffect, useState, useRef } from 'react';
 import api from '../api/axios';
 import { useRole } from '../hooks/useRole';
 import Modal from './Modal';
+import SearchIcon from '../assets/search-icon.svg';
+import BoxIcon from '../assets/box.svg';
+import { useLang } from '../context/LangContext';
 
 const empty = { emri: '', kategoria_id: '', marka: '', modeli: '', pershkrimi: '', cmimi: '', cmimi_zbritjes: '', sasia_stokut: '', garancia_muaj: '' };
 const inp = { width: '100%', padding: '9px 12px', border: '1px solid #e2e8f0', borderRadius: 8, fontSize: 14, outline: 'none', boxSizing: 'border-box', marginBottom: 12 };
@@ -16,8 +19,10 @@ function Products() {
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [dragging, setDragging] = useState(false);
+  const [photoCleared, setPhotoCleared] = useState(false);
   const [search, setSearch] = useState('');
   const inputRef = useRef();
+  const { t } = useLang();
   const { can } = useRole();
   const canMutate = can('mutate:products');
 
@@ -38,28 +43,40 @@ function Products() {
     reader.readAsDataURL(file);
   };
 
-  const openAdd = () => { setEditId(null); setForm(empty); setImageFile(null); setImagePreview(null); setModalOpen(true); };
+  const openAdd = () => { setEditId(null); setForm(empty); setImageFile(null); setImagePreview(null); setPhotoCleared(false); setModalOpen(true); };
   const openEdit = (p) => {
     setEditId(p.id);
     setForm({ emri: p.emri || '', kategoria_id: p.kategoria_id != null ? String(p.kategoria_id) : '', marka: p.marka || '', modeli: p.modeli || '', pershkrimi: p.pershkrimi || '', cmimi: p.cmimi ?? '', cmimi_zbritjes: p.cmimi_zbritjes ?? '', sasia_stokut: p.sasia_stokut ?? '', garancia_muaj: p.garancia_muaj ?? '' });
     setImageFile(null);
     setImagePreview(p.foto_kryesore || null);
+    setPhotoCleared(false);
     setModalOpen(true);
   };
-  const closeModal = () => { setModalOpen(false); setEditId(null); setForm(empty); setImageFile(null); setImagePreview(null); };
+  const closeModal = () => { setModalOpen(false); setEditId(null); setForm(empty); setImageFile(null); setImagePreview(null); setPhotoCleared(false); };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     const data = new FormData();
     Object.entries(form).forEach(([k, v]) => data.append(k, v || ''));
-    if (imageFile) data.append('foto', imageFile);
+    if (imageFile) {
+      data.append('foto', imageFile);
+    } else if (photoCleared) {
+      data.append('foto_kryesore', ''); // explicitly cleared
+    } else if (imagePreview && imagePreview.startsWith('http')) {
+      data.append('foto_kryesore', imagePreview); // keep existing
+    }
     const config = { headers: { 'Content-Type': 'multipart/form-data' } };
     const req = editId ? api.put(`/products/${editId}`, data, config) : api.post('/products', data, config);
-    req.then(() => { closeModal(); fetchProducts(); }).catch(console.error);
+    req
+      .then(() => { closeModal(); fetchProducts(); })
+      .catch(err => {
+        const msg = err.response?.data?.message || err.message || 'Unknown error';
+        alert('Error: ' + msg);
+      });
   };
 
   const handleDelete = (id) => {
-    if (!window.confirm('Fshi këtë produkt?')) return;
+    if (!window.confirm(t.confirmDelete)) return;
     api.delete(`/products/${id}`).then(() => setProducts(prev => prev.filter(p => p.id !== id))).catch(console.error);
   };
 
@@ -71,8 +88,8 @@ function Products() {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
         <div>
-          <h1 style={{ margin: '0 0 4px', fontSize: 22, fontWeight: 700, color: '#0f172a' }}>Produktet</h1>
-          <p style={{ margin: 0, color: '#64748b', fontSize: 13 }}>{products.length} produkte gjithsej</p>
+          <h1 style={{ margin: '0 0 4px', fontSize: 22, fontWeight: 700, color: '#0f172a' }}>{t.productsTitle}</h1>
+          <p style={{ margin: 0, color: '#64748b', fontSize: 13 }}>{products.length} {t.productsCount}</p>
         </div>
         {canMutate && (
           <button onClick={openAdd} style={{ padding: '9px 20px', background: '#4f46e5', color: 'white', border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
@@ -82,8 +99,8 @@ function Products() {
       </div>
 
       <div style={{ position: 'relative', marginBottom: 16 }}>
-        <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', fontSize: 14 }}>🔍</span>
-        <input placeholder="Kërko produkt..." value={search} onChange={e => setSearch(e.target.value)}
+        <img src={SearchIcon} alt="" style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", width: 15, height: 15, opacity: 0.45, pointerEvents: "none" }} />
+        <input placeholder={t.searchProduct} value={search} onChange={e => setSearch(e.target.value)}
           style={{ width: '100%', paddingLeft: 36, paddingRight: 12, paddingTop: 9, paddingBottom: 9, border: '1px solid #e2e8f0', borderRadius: 10, fontSize: 14, outline: 'none', boxSizing: 'border-box' }} />
       </div>
 
@@ -91,7 +108,7 @@ function Products() {
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ background: '#f8fafc' }}>
-              {['', 'Emri', 'Kategoria', 'Çmimi', 'Stoku', 'Garancia', 'Veprimet'].map(h => (
+              {[t.colPhoto, t.colName, t.colCategory, t.colPrice, t.colStock, t.colWarranty, t.actions].map(h => (
                 <th key={h} style={{ padding: '10px 16px', textAlign: 'left', fontSize: 11, color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{h}</th>
               ))}
             </tr>
@@ -105,7 +122,7 @@ function Products() {
                   <div style={{ width: 44, height: 44, borderRadius: 8, overflow: 'hidden', background: '#f0f4ff', border: '1px solid #e0e7ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {p.foto_kryesore
                       ? <img src={p.foto_kryesore} alt={p.emri} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.target.style.display='none'; }} />
-                      : <span style={{ fontSize: 20 }}>📦</span>
+                      : <img src={BoxIcon} alt="" style={{ width: 28, height: 28, opacity: 0.4 }} />
                     }
                   </div>
                 </td>
@@ -116,19 +133,19 @@ function Products() {
                 <td style={{ padding: '10px 16px', color: '#64748b', fontSize: 13 }}>{p.kategoria_emri || '—'}</td>
                 <td style={{ padding: '10px 16px' }}>
                   <div style={{ fontWeight: 700, color: '#0f172a' }}>{p.cmimi}€</div>
-                  {p.cmimi_zbritjes && <div style={{ fontSize: 11, color: '#ef4444' }}>{p.cmimi_zbritjes}€ zbritje</div>}
+                  {p.cmimi_zbritjes && <div style={{ fontSize: 11, color: '#ef4444' }}>{p.cmimi_zbritjes}€ {t.discount_label}</div>}
                 </td>
                 <td style={{ padding: '10px 16px' }}>
                   <span style={{ padding: '2px 8px', borderRadius: 20, fontSize: 12, fontWeight: 600, background: p.sasia_stokut > 5 ? '#dcfce7' : '#fef9c3', color: p.sasia_stokut > 5 ? '#15803d' : '#a16207' }}>
-                    {p.sasia_stokut} copë
+                    {p.sasia_stokut} {t.pieces}
                   </span>
                 </td>
                 <td style={{ padding: '10px 16px', color: '#64748b', fontSize: 13 }}>{p.garancia_muaj ? `${p.garancia_muaj} muaj` : '—'}</td>
                 <td style={{ padding: '10px 16px' }}>
                   {canMutate && (
                     <>
-                      <button onClick={() => openEdit(p)} style={{ padding: '4px 12px', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 6, color: '#1d4ed8', fontSize: 12, cursor: 'pointer', marginRight: 6 }}>Ndrysho</button>
-                      <button onClick={() => handleDelete(p.id)} style={{ padding: '4px 12px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 6, color: '#dc2626', fontSize: 12, cursor: 'pointer' }}>Fshi</button>
+                      <button onClick={() => openEdit(p)} style={{ padding: '4px 12px', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 6, color: '#1d4ed8', fontSize: 12, cursor: 'pointer', marginRight: 6 }}>{t.edit}</button>
+                      <button onClick={() => handleDelete(p.id)} style={{ padding: '4px 12px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 6, color: '#dc2626', fontSize: 12, cursor: 'pointer' }}>{t.delete}</button>
                     </>
                   )}
                 </td>
@@ -138,29 +155,29 @@ function Products() {
         </table>
       </div>
 
-      <Modal isOpen={modalOpen} onClose={closeModal} title={editId ? 'Ndrysho Produktin' : 'Shto Produkt të Ri'} size="lg">
+      <Modal isOpen={modalOpen} onClose={closeModal} title={editId ? t.editProduct : t.newProduct} size="lg">
         <form onSubmit={handleSubmit}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-            <div style={{ gridColumn: '1/-1' }}><label style={label}>Emri *</label><input required style={inp} value={form.emri} onChange={set('emri')} placeholder="p.sh. iPhone 15 Pro" /></div>
+            <div style={{ gridColumn: '1/-1' }}><label style={label}>{t.productName}</label><input required style={inp} value={form.emri} onChange={set('emri')} placeholder="p.sh. iPhone 15 Pro" /></div>
             <div>
-              <label style={label}>Kategoria</label>
+              <label style={label}>{t.category}</label>
               <select style={inp} value={form.kategoria_id} onChange={set('kategoria_id')}>
-                <option value="">Pa kategori</option>
+                <option value="">{t.noCategory}</option>
                 {categories.map(c => <option key={c.id} value={String(c.id)}>{c.emertimi}</option>)}
               </select>
             </div>
-            <div><label style={label}>Marka</label><input style={inp} value={form.marka} onChange={set('marka')} placeholder="Apple" /></div>
-            <div><label style={label}>Modeli</label><input style={inp} value={form.modeli} onChange={set('modeli')} placeholder="iPhone 15 Pro" /></div>
-            <div><label style={label}>Çmimi (€) *</label><input required type="number" step="0.01" style={inp} value={form.cmimi} onChange={set('cmimi')} placeholder="999.00" /></div>
-            <div><label style={label}>Çmimi me Zbritje (€)</label><input type="number" step="0.01" style={inp} value={form.cmimi_zbritjes} onChange={set('cmimi_zbritjes')} placeholder="899.00" /></div>
-            <div><label style={label}>Sasia në Stok</label><input type="number" style={inp} value={form.sasia_stokut} onChange={set('sasia_stokut')} placeholder="10" /></div>
-            <div><label style={label}>Garancia (muaj)</label><input type="number" style={inp} value={form.garancia_muaj} onChange={set('garancia_muaj')} placeholder="24" /></div>
-            <div style={{ gridColumn: '1/-1' }}><label style={label}>Përshkrimi</label><textarea style={{ ...inp, minHeight: 72, resize: 'vertical' }} value={form.pershkrimi} onChange={set('pershkrimi')} placeholder="Përshkrim i produktit..." /></div>
+            <div><label style={label}>{t.brand}</label><input style={inp} value={form.marka} onChange={set('marka')} placeholder="Apple" /></div>
+            <div><label style={label}>{t.model}</label><input style={inp} value={form.modeli} onChange={set('modeli')} placeholder="iPhone 15 Pro" /></div>
+            <div><label style={label}>{t.productPrice}</label><input required type="number" step="0.01" style={inp} value={form.cmimi} onChange={set('cmimi')} placeholder="999.00" /></div>
+            <div><label style={label}>{t.productDiscount}</label><input type="number" step="0.01" style={inp} value={form.cmimi_zbritjes} onChange={set('cmimi_zbritjes')} placeholder="899.00" /></div>
+            <div><label style={label}>{t.productStock}</label><input type="number" style={inp} value={form.sasia_stokut} onChange={set('sasia_stokut')} placeholder="10" /></div>
+            <div><label style={label}>{t.productWarranty}</label><input type="number" style={inp} value={form.garancia_muaj} onChange={set('garancia_muaj')} placeholder="24" /></div>
+            <div style={{ gridColumn: '1/-1' }}><label style={label}>{t.productDesc}</label><textarea style={{ ...inp, minHeight: 72, resize: 'vertical' }} value={form.pershkrimi} onChange={set('pershkrimi')} placeholder="Përshkrim i produktit..." /></div>
           </div>
 
           {/* Foto upload */}
           <div style={{ marginBottom: 16 }}>
-            <label style={label}>Foto e Produktit</label>
+            <label style={label}>{t.productPhoto}</label>
             <div
               onClick={() => inputRef.current?.click()}
               onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
@@ -171,12 +188,12 @@ function Products() {
               {imagePreview ? (
                 <>
                   <img src={imagePreview} alt="Preview" style={{ width: '100%', maxHeight: 160, objectFit: 'contain', display: 'block' }} />
-                  <button type="button" onClick={(e) => { e.stopPropagation(); setImageFile(null); setImagePreview(null); }} style={{ position: 'absolute', top: 8, right: 8, background: 'rgba(0,0,0,0.5)', color: 'white', border: 'none', borderRadius: '50%', width: 26, height: 26, cursor: 'pointer', fontSize: 13 }}>✕</button>
+                  <button type="button" onClick={(e) => { e.stopPropagation(); setImageFile(null); setImagePreview(null); setPhotoCleared(true); }} style={{ position: 'absolute', top: 8, right: 8, background: 'rgba(0,0,0,0.5)', color: 'white', border: 'none', borderRadius: '50%', width: 26, height: 26, cursor: 'pointer', fontSize: 13 }}>✕</button>
                 </>
               ) : (
                 <div style={{ color: '#94a3b8', fontSize: 14 }}>
-                  <div style={{ fontSize: 28, marginBottom: 6 }}>📷</div>
-                  Kliko ose zvarrit foto këtu
+                  <img src={BoxIcon} alt="" style={{ width: 32, height: 32, opacity: 0.35, marginBottom: 6 }} />
+                  {t.photoHint}
                 </div>
               )}
               <input ref={inputRef} type="file" accept="image/*" onChange={(e) => handleImageFile(e.target.files[0])} style={{ display: 'none' }} />
@@ -185,9 +202,9 @@ function Products() {
 
           <div style={{ display: 'flex', gap: 8 }}>
             <button type="submit" style={{ flex: 1, padding: 11, background: '#4f46e5', border: 'none', borderRadius: 10, color: 'white', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>
-              {editId ? 'Ruaj Ndryshimet' : 'Shto Produktin'}
+              {editId ? t.saveChanges : t.addProduct}
             </button>
-            <button type="button" onClick={closeModal} style={{ padding: '11px 20px', background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 10, color: '#64748b', fontSize: 14, cursor: 'pointer' }}>Anulo</button>
+            <button type="button" onClick={closeModal} style={{ padding: '11px 20px', background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 10, color: '#64748b', fontSize: 14, cursor: 'pointer' }}>{t.cancel}</button>
           </div>
         </form>
       </Modal>

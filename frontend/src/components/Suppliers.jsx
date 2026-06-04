@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import SearchIcon from '../assets/search-icon.svg';
+import { useLang } from '../context/LangContext';
 import api from '../api/axios';
 import { useRole } from '../hooks/useRole';
 import Modal from './Modal';
@@ -16,6 +18,7 @@ function Suppliers() {
   const [modalOpen, setModalOpen] = useState(false);
   const [expandedId, setExpandedId] = useState(null);
   const [history, setHistory] = useState({});
+  const { t } = useLang();
   const { can } = useRole();
   const canMutate = can('mutate:suppliers');
 
@@ -36,7 +39,7 @@ function Suppliers() {
   };
 
   const handleDelete = id => {
-    if (!window.confirm('Fshi këtë furnitor?')) return;
+    if (!window.confirm(t.confirmDeleteSupplier)) return;
     api.delete(`/suppliers/${id}`).then(fetchSuppliers).catch(console.error);
   };
 
@@ -53,12 +56,12 @@ function Suppliers() {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
         <div>
-          <h1 style={{ margin: '0 0 4px', fontSize: 22, fontWeight: 700, color: '#0f172a' }}>Furnitorët</h1>
-          <p style={{ margin: 0, color: '#64748b', fontSize: 13 }}>{suppliers.length} furnitorë gjithsej</p>
+          <h1 style={{ margin: '0 0 4px', fontSize: 22, fontWeight: 700, color: '#0f172a' }}>{t.suppliersTitle}</h1>
+          <p style={{ margin: 0, color: '#64748b', fontSize: 13 }}>{suppliers.length} {t.suppliersCount}</p>
         </div>
         {canMutate && (
           <button onClick={openAdd} style={{ padding: '9px 20px', background: '#4f46e5', color: 'white', border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
-            + Shto Furnitor
+            {t.addSupplier}
           </button>
         )}
       </div>
@@ -80,8 +83,8 @@ function Suppliers() {
                 </button>
                 {canMutate && (
                   <>
-                    <button onClick={() => openEdit(s)} style={{ padding: '5px 12px', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 8, color: '#1d4ed8', fontSize: 12, cursor: 'pointer' }}>Ndrysho</button>
-                    <button onClick={() => handleDelete(s.id)} style={{ padding: '5px 12px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, color: '#dc2626', fontSize: 12, cursor: 'pointer' }}>Fshi</button>
+                    <button onClick={() => openEdit(s)} style={{ padding: '5px 12px', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 8, color: '#1d4ed8', fontSize: 12, cursor: 'pointer' }}>{t.edit}</button>
+                    <button onClick={() => handleDelete(s.id)} style={{ padding: '5px 12px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, color: '#dc2626', fontSize: 12, cursor: 'pointer' }}>{t.delete}</button>
                   </>
                 )}
               </div>
@@ -115,7 +118,7 @@ function Suppliers() {
         ))}
       </div>
 
-      <Modal isOpen={modalOpen} onClose={closeModal} title={editId ? 'Ndrysho Furnitorin' : 'Shto Furnitor të Ri'}>
+      <Modal isOpen={modalOpen} onClose={closeModal} title={editId ? t.editSupplier : t.newSupplier}>
         <form onSubmit={handleSubmit}>
           <div><label style={label}>Emri i Kompanisë *</label><input required style={inp} value={form.emri_kompanise} onChange={set('emri_kompanise')} placeholder="p.sh. TechSupply SH.P.K" /></div>
           <div><label style={label}>Kontakti</label><input style={inp} value={form.kontakti} onChange={set('kontakti')} placeholder="Besnik Krasniqi" /></div>
@@ -124,9 +127,9 @@ function Suppliers() {
           <div><label style={label}>Adresa</label><input style={inp} value={form.adresa} onChange={set('adresa')} placeholder="Rruga Prishtina, Nr. 1" /></div>
           <div style={{ display: 'flex', gap: 8 }}>
             <button type="submit" style={{ flex: 1, padding: 11, background: '#4f46e5', border: 'none', borderRadius: 10, color: 'white', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>
-              {editId ? 'Ruaj Ndryshimet' : 'Shto Furnitorin'}
+              {editId ? t.saveChanges : t.addSupplier}
             </button>
-            <button type="button" onClick={closeModal} style={{ padding: '11px 20px', background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 10, color: '#64748b', fontSize: 14, cursor: 'pointer' }}>Anulo</button>
+            <button type="button" onClick={closeModal} style={{ padding: '11px 20px', background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 10, color: '#64748b', fontSize: 14, cursor: 'pointer' }}>{t.cancel}</button>
           </div>
         </form>
       </Modal>

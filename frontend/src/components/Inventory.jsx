@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useLang } from '../context/LangContext';
 import api from '../api/axios';
 import { useRole } from '../hooks/useRole';
 
@@ -21,6 +22,7 @@ function Inventory() {
   const [products, setProducts] = useState([]);
   const [form, setForm]       = useState(empty);
   const [filterType, setFilterType] = useState('');
+  const { t } = useLang();
   const { can } = useRole();
   const canMutate = can('mutate:inventory');
 
@@ -74,9 +76,9 @@ function Inventory() {
       {/* Filter */}
       <div style={{ display:'flex', gap:8, marginBottom:12, alignItems:'center' }}>
         <span style={{ fontSize:13, color:'#64748b' }}>Filter:</span>
-        {['', 'hyrje', 'dalje', 'rregullim'].map(t => (
-          <button key={t} onClick={() => setFilterType(t)} style={{ padding:'4px 12px', borderRadius:8, border:'1px solid', fontSize:12, cursor:'pointer', fontWeight: filterType===t ? 700 : 400, background: filterType===t ? '#4f46e5' : 'white', color: filterType===t ? 'white' : '#64748b', borderColor: filterType===t ? '#4f46e5' : '#e2e8f0' }}>
-            {t === '' ? 'All' : TYPE_STYLE[t].label}
+        {['', 'hyrje', 'dalje', 'rregullim'].map(ftype => (
+          <button key={ftype} onClick={() => setFilterType(ftype)} style={{ padding:'4px 12px', borderRadius:8, border:'1px solid', fontSize:12, cursor:'pointer', fontWeight: filterType===ftype ? 700 : 400, background: filterType===ftype ? '#4f46e5' : 'white', color: filterType===ftype ? 'white' : '#64748b', borderColor: filterType===ftype ? '#4f46e5' : '#e2e8f0' }}>
+            {ftype === '' ? 'All' : (TYPE_STYLE[ftype]?.label ?? ftype)}
           </button>
         ))}
         <span style={{ marginLeft:'auto', fontSize:12, color:'#94a3b8' }}>{filtered.length} entries</span>

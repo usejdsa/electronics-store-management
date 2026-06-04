@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useLang } from '../context/LangContext';
 import api from '../api/axios';
 import { useRole } from '../hooks/useRole';
 import Modal from './Modal';
@@ -10,7 +11,7 @@ const ALLOWED_NEXT = { draft: ['ordered','cancelled'], ordered: ['received','can
 const inp = { width: '100%', padding: '9px 12px', border: '1px solid #e2e8f0', borderRadius: 8, fontSize: 14, outline: 'none', boxSizing: 'border-box', marginBottom: 12 };
 const label = { display: 'block', fontSize: 13, fontWeight: 500, color: '#374151', marginBottom: 4 };
 
-function StatusStepper({ order, canMutate, onStatusChange }) {
+function StatusStepper({ order, canMutate, onStatusChange, t }) {
   const mainSteps = ['draft', 'ordered', 'received'];
   const cur = order.statusi;
   const curIdx = mainSteps.indexOf(cur);
@@ -46,7 +47,7 @@ function StatusStepper({ order, canMutate, onStatusChange }) {
             </button>
           ))}
           {allowed.includes('cancelled') && (
-            <button onClick={() => { if (window.confirm('Anulo këtë porosi?')) onStatusChange(order.id, 'cancelled'); }} style={{ padding: '5px 14px', borderRadius: 8, border: '1px solid #fca5a5', background: '#fff5f5', color: '#dc2626', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>Anulo</button>
+            <button onClick={() => { if (window.confirm('Anulo këtë porosi?')) onStatusChange(order.id, 'cancelled'); }} style={{ padding: '5px 14px', borderRadius: 8, border: '1px solid #fca5a5', background: '#fff5f5', color: '#dc2626', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>{t.cancel}</button>
           )}
         </div>
       )}
@@ -61,6 +62,7 @@ function PurchaseOrders() {
   const [editId, setEditId] = useState(null);
   const [form, setForm] = useState(empty);
   const [modalOpen, setModalOpen] = useState(false);
+  const { t } = useLang();
   const { can } = useRole();
   const canMutate = can('mutate:purchase-orders');
 
@@ -86,7 +88,7 @@ function PurchaseOrders() {
   };
 
   const handleDelete = id => {
-    if (!window.confirm('Fshi këtë porosi furnizimi?')) return;
+    if (!window.confirm(t.confirmDeletePO)) return;
     api.delete(`/purchase-orders/${id}`).then(fetchData).catch(console.error);
   };
 
@@ -101,11 +103,11 @@ function PurchaseOrders() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
         <div>
           <h1 style={{ margin: '0 0 4px', fontSize: 22, fontWeight: 700, color: '#0f172a' }}>Porosite e Furnizimit</h1>
-          <p style={{ margin: 0, color: '#64748b', fontSize: 13 }}>{orders.length} porosi gjithsej</p>
+          <p style={{ margin: 0, color: '#64748b', fontSize: 13 }}>{orders.length} {t.ordersCount}</p>
         </div>
         {canMutate && (
           <button onClick={openAdd} style={{ padding: '9px 20px', background: '#4f46e5', color: 'white', border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
-            + Shto Porosi
+            {t.addPurchaseOrder}
           </button>
         )}
       </div>
@@ -127,17 +129,17 @@ function PurchaseOrders() {
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-                  {canMutate && o.statusi === 'draft' && <button onClick={() => openEdit(o)} style={{ padding: '5px 12px', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 8, color: '#1d4ed8', fontSize: 12, cursor: 'pointer' }}>Ndrysho</button>}
-                  {canMutate && <button onClick={() => handleDelete(o.id)} style={{ padding: '5px 12px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, color: '#dc2626', fontSize: 12, cursor: 'pointer' }}>Fshi</button>}
+                  {canMutate && o.statusi === 'draft' && <button onClick={() => openEdit(o)} style={{ padding: '5px 12px', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 8, color: '#1d4ed8', fontSize: 12, cursor: 'pointer' }}>{t.edit}</button>}
+                  {canMutate && <button onClick={() => handleDelete(o.id)} style={{ padding: '5px 12px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, color: '#dc2626', fontSize: 12, cursor: 'pointer' }}>{t.delete}</button>}
                 </div>
               </div>
-              <StatusStepper order={o} canMutate={canMutate} onStatusChange={handleStatusChange} />
+              <StatusStepper order={o} canMutate={canMutate} onStatusChange={handleStatusChange} t={t}/>
             </div>
           );
         })}
       </div>
 
-      <Modal isOpen={modalOpen} onClose={closeModal} title={editId ? 'Ndrysho Porosinë' : 'Shto Porosi Furnizimi'}>
+      <Modal isOpen={modalOpen} onClose={closeModal} title={editId ? t.editPurchaseOrder : t.newPurchaseOrder}>
         <form onSubmit={handleSubmit}>
           <div>
             <label style={label}>Furnitori *</label>
@@ -165,9 +167,9 @@ function PurchaseOrders() {
           <div><label style={label}>Shënime</label><textarea style={{ ...inp, minHeight: 60, resize: 'vertical' }} value={form.shenime} onChange={set('shenime')} placeholder="Shënime shtesë..." /></div>
           <div style={{ display: 'flex', gap: 8 }}>
             <button type="submit" style={{ flex: 1, padding: 11, background: '#4f46e5', border: 'none', borderRadius: 10, color: 'white', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>
-              {editId ? 'Ruaj Ndryshimet' : 'Shto Porosinë'}
+              {editId ? t.saveChanges : t.addPurchaseOrder}
             </button>
-            <button type="button" onClick={closeModal} style={{ padding: '11px 20px', background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 10, color: '#64748b', fontSize: 14, cursor: 'pointer' }}>Anulo</button>
+            <button type="button" onClick={closeModal} style={{ padding: '11px 20px', background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 10, color: '#64748b', fontSize: 14, cursor: 'pointer' }}>{t.cancel}</button>
           </div>
         </form>
       </Modal>

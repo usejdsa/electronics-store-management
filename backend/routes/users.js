@@ -65,3 +65,14 @@ router.put('/:id/status', verifyToken, checkRole(['Admin']), (req, res) => {
 });
 
 module.exports = router;
+// DELETE user — Admin only (cannot delete yourself)
+router.delete('/:id', verifyToken, checkRole(['Admin']), (req, res) => {
+  if (String(req.user.id) === String(req.params.id)) {
+    return res.status(400).json({ message: 'Nuk mund ta fshish llogarinë tënde.' });
+  }
+  db.query('DELETE FROM Users WHERE id = ?', [req.params.id], (err, result) => {
+    if (err) return res.status(500).json(err);
+    if (result.affectedRows === 0) return res.status(404).json({ message: 'Useri nuk u gjet.' });
+    res.json({ message: 'Useri u fshi.' });
+  });
+});

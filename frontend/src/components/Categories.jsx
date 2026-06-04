@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useLang } from '../context/LangContext';
 import api from '../api/axios';
 import { useRole } from '../hooks/useRole';
 import Modal from './Modal';
@@ -13,6 +14,7 @@ function Categories() {
   const [editId, setEditId] = useState(null);
   const [form, setForm] = useState(empty);
   const [modalOpen, setModalOpen] = useState(false);
+  const { t } = useLang();
   const { can } = useRole();
   const canMutate = can('mutate:categories');
 
@@ -38,7 +40,7 @@ function Categories() {
   };
 
   const handleDelete = (id) => {
-    if (!window.confirm('Fshi këtë kategori?')) return;
+    if (!window.confirm(t.confirmDelete)) return;
     api.delete(`/categories/${id}`).then(() => setCategories(prev => prev.filter(c => c.id !== id))).catch(console.error);
   };
 
@@ -46,8 +48,8 @@ function Categories() {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
         <div>
-          <h1 style={{ margin: '0 0 4px', fontSize: 22, fontWeight: 700, color: '#0f172a' }}>Kategoritë</h1>
-          <p style={{ margin: 0, color: '#64748b', fontSize: 13 }}>{categories.length} kategori gjithsej</p>
+          <h1 style={{ margin: '0 0 4px', fontSize: 22, fontWeight: 700, color: '#0f172a' }}>{t.categoriesTitle}</h1>
+          <p style={{ margin: 0, color: '#64748b', fontSize: 13 }}>{categories.length} {t.categoriesCount}</p>
         </div>
         {canMutate && (
           <button onClick={openAdd} style={{ padding: '9px 20px', background: '#4f46e5', color: 'white', border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
@@ -79,8 +81,8 @@ function Categories() {
                 <td style={{ padding: '12px 16px' }}>
                   {canMutate && (
                     <>
-                      <button onClick={() => openEdit(c)} style={{ padding: '4px 12px', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 6, color: '#1d4ed8', fontSize: 12, cursor: 'pointer', marginRight: 6 }}>Ndrysho</button>
-                      <button onClick={() => handleDelete(c.id)} style={{ padding: '4px 12px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 6, color: '#dc2626', fontSize: 12, cursor: 'pointer' }}>Fshi</button>
+                      <button onClick={() => openEdit(c)} style={{ padding: '4px 12px', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 6, color: '#1d4ed8', fontSize: 12, cursor: 'pointer', marginRight: 6 }}>{t.edit}</button>
+                      <button onClick={() => handleDelete(c.id)} style={{ padding: '4px 12px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 6, color: '#dc2626', fontSize: 12, cursor: 'pointer' }}>{t.delete}</button>
                     </>
                   )}
                 </td>
@@ -91,11 +93,11 @@ function Categories() {
       </div>
 
       {/* Modal */}
-      <Modal isOpen={modalOpen} onClose={closeModal} title={editId ? 'Ndrysho Kategorinë' : 'Shto Kategori të Re'}>
+      <Modal isOpen={modalOpen} onClose={closeModal} title={editId ? t.editCategory : t.newCategory}>
         <form onSubmit={handleSubmit}>
-          <div><label style={label}>Emri *</label><input required style={inp} value={form.emertimi} onChange={set('emertimi')} placeholder="p.sh. Telefona" /></div>
+          <div><label style={label}>{t.name} *</label><input required style={inp} value={form.emertimi} onChange={set('emertimi')} placeholder="p.sh. Telefona" /></div>
           <div><label style={label}>Përshkrimi</label><input style={inp} value={form.pershkrimi} onChange={set('pershkrimi')} placeholder="Përshkrim i shkurtër" /></div>
-          <div><label style={label}>Ikona (emoji)</label><input style={inp} value={form.ikona} onChange={set('ikona')} placeholder="📱" /></div>
+          <div><label style={label}>{t.iconEmoji}</label><input style={inp} value={form.ikona} onChange={set('ikona')} placeholder="📱" /></div>
           <div>
             <label style={label}>Kategoria Prind</label>
             <select style={inp} value={form.kategoria_prind_id} onChange={set('kategoria_prind_id')}>
@@ -105,9 +107,9 @@ function Categories() {
           </div>
           <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
             <button type="submit" style={{ flex: 1, padding: 11, background: '#4f46e5', border: 'none', borderRadius: 10, color: 'white', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>
-              {editId ? 'Ruaj Ndryshimet' : 'Shto Kategorinë'}
+              {editId ? t.saveChanges : t.addCategory}
             </button>
-            <button type="button" onClick={closeModal} style={{ padding: '11px 20px', background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 10, color: '#64748b', fontSize: 14, cursor: 'pointer' }}>Anulo</button>
+            <button type="button" onClick={closeModal} style={{ padding: '11px 20px', background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 10, color: '#64748b', fontSize: 14, cursor: 'pointer' }}>{t.cancel}</button>
           </div>
         </form>
       </Modal>

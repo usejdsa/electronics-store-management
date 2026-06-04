@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import SearchIcon from '../assets/search-icon.svg';
+import { useLang } from '../context/LangContext';
 import api from '../api/axios';
 import { useRole } from '../hooks/useRole';
 import Modal from './Modal';
@@ -13,6 +15,7 @@ function Customers() {
   const [form, setForm] = useState(empty);
   const [modalOpen, setModalOpen] = useState(false);
   const [search, setSearch] = useState('');
+  const { t } = useLang();
   const { can } = useRole();
   const canMutate = can('mutate:customers');
   const canDelete = can('delete:customers');
@@ -38,7 +41,7 @@ function Customers() {
   };
 
   const handleDelete = (id) => {
-    if (!window.confirm('Fshi këtë klient?')) return;
+    if (!window.confirm(t.confirmDelete)) return;
     api.delete(`/customers/${id}`).then(() => setCustomers(prev => prev.filter(c => c.id !== id))).catch(console.error);
   };
 
@@ -50,8 +53,8 @@ function Customers() {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
         <div>
-          <h1 style={{ margin: '0 0 4px', fontSize: 22, fontWeight: 700, color: '#0f172a' }}>Klientët</h1>
-          <p style={{ margin: 0, color: '#64748b', fontSize: 13 }}>{customers.length} klientë gjithsej</p>
+          <h1 style={{ margin: '0 0 4px', fontSize: 22, fontWeight: 700, color: '#0f172a' }}>{t.customersTitle}</h1>
+          <p style={{ margin: 0, color: '#64748b', fontSize: 13 }}>{customers.length} {t.customersCount}</p>
         </div>
         {canMutate && (
           <button onClick={openAdd} style={{ padding: '9px 20px', background: '#4f46e5', color: 'white', border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
@@ -62,9 +65,9 @@ function Customers() {
 
       {/* Kërkim */}
       <div style={{ position: 'relative', marginBottom: 16 }}>
-        <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', fontSize: 14 }}>🔍</span>
+        <img src={SearchIcon} alt="" style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", width: 15, height: 15, opacity: 0.45, pointerEvents: "none" }} />
         <input
-          placeholder="Kërko klient..."
+          placeholder={t.searchCustomer}
           value={search}
           onChange={e => setSearch(e.target.value)}
           style={{ width: '100%', paddingLeft: 36, paddingRight: 12, paddingTop: 9, paddingBottom: 9, border: '1px solid #e2e8f0', borderRadius: 10, fontSize: 14, outline: 'none', boxSizing: 'border-box' }}
@@ -75,7 +78,7 @@ function Customers() {
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ background: '#f8fafc' }}>
-              {['ID', 'Emri', 'Email', 'Telefoni', 'Qyteti', 'Veprimet'].map(h => (
+              {['ID', t.colFirstName, t.colEmail, t.colPhone, t.colCity, t.actions].map(h => (
                 <th key={h} style={{ padding: '10px 16px', textAlign: 'left', fontSize: 11, color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{h}</th>
               ))}
             </tr>
@@ -98,8 +101,8 @@ function Customers() {
                 <td style={{ padding: '12px 16px', color: '#64748b', fontSize: 13 }}>{c.telefoni || '—'}</td>
                 <td style={{ padding: '12px 16px', color: '#64748b', fontSize: 13 }}>{c.qyteti || '—'}</td>
                 <td style={{ padding: '12px 16px' }}>
-                  {canMutate && <button onClick={() => openEdit(c)} style={{ padding: '4px 12px', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 6, color: '#1d4ed8', fontSize: 12, cursor: 'pointer', marginRight: 6 }}>Ndrysho</button>}
-                  {canDelete && <button onClick={() => handleDelete(c.id)} style={{ padding: '4px 12px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 6, color: '#dc2626', fontSize: 12, cursor: 'pointer' }}>Fshi</button>}
+                  {canMutate && <button onClick={() => openEdit(c)} style={{ padding: '4px 12px', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 6, color: '#1d4ed8', fontSize: 12, cursor: 'pointer', marginRight: 6 }}>{t.edit}</button>}
+                  {canDelete && <button onClick={() => handleDelete(c.id)} style={{ padding: '4px 12px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 6, color: '#dc2626', fontSize: 12, cursor: 'pointer' }}>{t.delete}</button>}
                 </td>
               </tr>
             ))}
@@ -107,21 +110,21 @@ function Customers() {
         </table>
       </div>
 
-      <Modal isOpen={modalOpen} onClose={closeModal} title={editId ? 'Ndrysho Klientin' : 'Shto Klient të Ri'}>
+      <Modal isOpen={modalOpen} onClose={closeModal} title={editId ? t.editCustomer : t.newCustomer}>
         <form onSubmit={handleSubmit}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-            <div><label style={label}>Emri *</label><input required style={inp} value={form.emri} onChange={set('emri')} placeholder="Besnik" /></div>
-            <div><label style={label}>Mbiemri *</label><input required style={inp} value={form.mbiemri} onChange={set('mbiemri')} placeholder="Krasniqi" /></div>
-            <div><label style={label}>Email</label><input type="email" style={inp} value={form.email} onChange={set('email')} placeholder="email@gmail.com" /></div>
-            <div><label style={label}>Telefoni</label><input style={inp} value={form.telefoni} onChange={set('telefoni')} placeholder="+383 44 000 000" /></div>
-            <div><label style={label}>Adresa</label><input style={inp} value={form.adresa} onChange={set('adresa')} placeholder="Rruga Prishtina" /></div>
-            <div><label style={label}>Qyteti</label><input style={inp} value={form.qyteti} onChange={set('qyteti')} placeholder="Prishtinë" /></div>
+            <div><label style={label}>{t.firstName} *</label><input required style={inp} value={form.emri} onChange={set('emri')} placeholder="Besnik" /></div>
+            <div><label style={label}>{t.lastName} *</label><input required style={inp} value={form.mbiemri} onChange={set('mbiemri')} placeholder="Krasniqi" /></div>
+            <div><label style={label}>{t.email}</label><input type="email" style={inp} value={form.email} onChange={set('email')} placeholder="email@gmail.com" /></div>
+            <div><label style={label}>{t.phone}</label><input style={inp} value={form.telefoni} onChange={set('telefoni')} placeholder="+383 44 000 000" /></div>
+            <div><label style={label}>{t.address}</label><input style={inp} value={form.adresa} onChange={set('adresa')} placeholder="Rruga Prishtina" /></div>
+            <div><label style={label}>{t.city}</label><input style={inp} value={form.qyteti} onChange={set('qyteti')} placeholder="Prishtinë" /></div>
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
             <button type="submit" style={{ flex: 1, padding: 11, background: '#4f46e5', border: 'none', borderRadius: 10, color: 'white', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>
-              {editId ? 'Ruaj Ndryshimet' : 'Shto Klientin'}
+              {editId ? t.saveChanges : t.addCustomer}
             </button>
-            <button type="button" onClick={closeModal} style={{ padding: '11px 20px', background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 10, color: '#64748b', fontSize: 14, cursor: 'pointer' }}>Anulo</button>
+            <button type="button" onClick={closeModal} style={{ padding: '11px 20px', background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 10, color: '#64748b', fontSize: 14, cursor: 'pointer' }}>{t.cancel}</button>
           </div>
         </form>
       </Modal>

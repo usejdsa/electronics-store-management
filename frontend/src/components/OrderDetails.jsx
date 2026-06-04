@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useLang } from '../context/LangContext';
 import api from '../api/axios';
 import { useRole } from '../hooks/useRole';
 import Modal from './Modal';
@@ -14,6 +15,7 @@ function OrderDetails() {
   const [editId, setEditId] = useState(null);
   const [form, setForm] = useState(empty);
   const [modalOpen, setModalOpen] = useState(false);
+  const { t } = useLang();
   const { can } = useRole();
   const canMutate = can('mutate:order-details');
   const canDelete = can('delete:order-details');
@@ -44,7 +46,7 @@ function OrderDetails() {
   };
 
   const handleDelete = (id) => {
-    if (!window.confirm('Fshi këtë detaj?')) return;
+    if (!window.confirm(t.confirmDeleteDetail)) return;
     api.delete(`/order-details/${id}`).then(fetchDetails).catch(console.error);
   };
 
@@ -57,11 +59,11 @@ function OrderDetails() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
         <div>
           <h1 style={{ margin: '0 0 4px', fontSize: 22, fontWeight: 700, color: '#0f172a' }}>Detajet e Porosive</h1>
-          <p style={{ margin: 0, color: '#64748b', fontSize: 13 }}>{details.length} detaje gjithsej</p>
+          <p style={{ margin: 0, color: '#64748b', fontSize: 13 }}>{details.length} {t.ordersCount}</p>
         </div>
         {canMutate && (
           <button onClick={openAdd} style={{ padding: '9px 20px', background: '#4f46e5', color: 'white', border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
-            + Shto Detaj
+            {t.addOrderDetail}
           </button>
         )}
       </div>
@@ -90,8 +92,8 @@ function OrderDetails() {
                   <td style={{ padding: '12px 16px', color: d.zbritja ? '#ef4444' : '#94a3b8' }}>{d.zbritja ? `-${d.zbritja}€` : '—'}</td>
                   <td style={{ padding: '12px 16px', fontWeight: 700, color: '#0f172a' }}>{total}€</td>
                   <td style={{ padding: '12px 16px' }}>
-                    {canMutate && <button onClick={() => openEdit(d)} style={{ padding: '4px 12px', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 6, color: '#1d4ed8', fontSize: 12, cursor: 'pointer', marginRight: 6 }}>Ndrysho</button>}
-                    {canDelete && <button onClick={() => handleDelete(d.id)} style={{ padding: '4px 12px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 6, color: '#dc2626', fontSize: 12, cursor: 'pointer' }}>Fshi</button>}
+                    {canMutate && <button onClick={() => openEdit(d)} style={{ padding: '4px 12px', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 6, color: '#1d4ed8', fontSize: 12, cursor: 'pointer', marginRight: 6 }}>{t.edit}</button>}
+                    {canDelete && <button onClick={() => handleDelete(d.id)} style={{ padding: '4px 12px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 6, color: '#dc2626', fontSize: 12, cursor: 'pointer' }}>{t.delete}</button>}
                   </td>
                 </tr>
               );
@@ -100,7 +102,7 @@ function OrderDetails() {
         </table>
       </div>
 
-      <Modal isOpen={modalOpen} onClose={closeModal} title={editId ? 'Ndrysho Detajin' : 'Shto Detaj të Ri'}>
+      <Modal isOpen={modalOpen} onClose={closeModal} title={editId ? t.editOrderDetail : t.newOrderDetail}>
         <form onSubmit={handleSubmit}>
           <div>
             <label style={label}>Porosia *</label>
@@ -130,9 +132,9 @@ function OrderDetails() {
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
             <button type="submit" style={{ flex: 1, padding: 11, background: '#4f46e5', border: 'none', borderRadius: 10, color: 'white', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>
-              {editId ? 'Ruaj Ndryshimet' : 'Shto Detajin'}
+              {editId ? t.saveChanges : t.addOrderDetail}
             </button>
-            <button type="button" onClick={closeModal} style={{ padding: '11px 20px', background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 10, color: '#64748b', fontSize: 14, cursor: 'pointer' }}>Anulo</button>
+            <button type="button" onClick={closeModal} style={{ padding: '11px 20px', background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 10, color: '#64748b', fontSize: 14, cursor: 'pointer' }}>{t.cancel}</button>
           </div>
         </form>
       </Modal>

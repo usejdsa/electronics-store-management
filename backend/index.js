@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
@@ -15,6 +16,8 @@ const inventoryRoute = require('./routes/inventory');
 const customerPortalRoutes = require('./routes/customerPortal');
 const dashboardRoute = require('./routes/dashboard');
 const usersRoute = require('./routes/users');
+const productReviewsRoute = require('./routes/productReviews');
+const serviceRequestsRoute = require('./routes/serviceRequests');
 
 const db = require('./config/db');
 
@@ -22,7 +25,8 @@ const path = require('path');
 
 const app = express();
 
-app.use(cors({ origin: 'http://localhost:5173' }));
+app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
+app.use(cookieParser());
 app.use(express.json());
 
 // Serve uploaded product images
@@ -44,6 +48,8 @@ app.use('/api/inventory', inventoryRoute);
 app.use('/api/customer', customerPortalRoutes);
 app.use('/api/dashboard', dashboardRoute);
 app.use('/api/users', usersRoute);
+app.use('/api/product-reviews', productReviewsRoute);
+app.use('/api/service-requests', serviceRequestsRoute);
 
 db.query('SELECT 1', (err) => {
   if (err) console.log('DB connection failed:', err.message);

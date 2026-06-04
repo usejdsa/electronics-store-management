@@ -1,30 +1,44 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(() => {
-    // On first load, try to restore user from localStorage
-    const saved = localStorage.getItem('user');
-    return saved ? JSON.parse(saved) : null;
-  });
-
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  // Restore session on app load
+  useEffect(() => {
+    api.get('/auth/me')
+      .then(res => setUser(res.data))
+      .catch(() => setUser(null))
+      .finally(() => setLoading(false));
+  }, []);
+
+  // Centralized logout listener (used by interceptor if needed)
+  useEffect(() => {
+    const handleLogout = () => {
+      setUser(null);
+      navigate('/login');
+    };
+
+    window.addEventListener('auth:logout', handleLogout);
+
+    return () => {
+      window.removeEventListener('auth:logout', handleLogout);
+    };
+  }, [navigate]);
+
+  // LOGIN
   const login = async (email, password) => {
-    // Returns { success: true } or { success: false, message: '...' }
     try {
       const res = await api.post('/auth/login', { email, password });
-      const { accessToken, refreshToken, user: userData } = res.data;
 
-      localStorage.setItem('accessToken', accessToken);
-      localStorage.setItem('refreshToken', refreshToken);
-      localStorage.setItem('user', JSON.stringify(userData));
-
-      setUser(userData);
+      setUser(res.data.user);
       navigate('/');
+
       return { success: true };
     } catch (err) {
       return {
@@ -34,23 +48,20 @@ export function AuthProvider({ children }) {
     }
   };
 
+  // LOGOUT
   const logout = async () => {
-    const refreshToken = localStorage.getItem('refreshToken');
     try {
-      // Tell backend to revoke the refresh token
-      await api.post('/auth/logout', { refreshToken });
-    } catch {
-      // Even if the request fails, still clear local state
+      await api.post('/auth/logout');
+    } catch (err) {
+      // ignore backend errors
     }
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('user');
+
     setUser(null);
     navigate('/login');
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,7 +1,7 @@
 import { Routes, Route, NavLink, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
-import { LangProvider } from './context/LangContext';
+import { LangProvider, useLang } from './context/LangContext';
 import { useRole } from './hooks/useRole';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
@@ -32,18 +32,19 @@ function Sidebar() {
   const { user, logout } = useAuth();
   const { can, isAdmin } = useRole();
 
+  const { t, lang, toggleLang } = useLang();
   const allLinks = [
-    { to: '/dashboard',       label: 'Dashboard',       show: can('view:dashboard') },
-    { to: '/products',        label: 'Products',         show: can('view:products') },
-    { to: '/categories',      label: 'Categories',       show: can('view:categories') },
-    { to: '/customers',       label: 'Customers',        show: can('view:customers') },
-    { to: '/orders',          label: 'Orders',           show: can('view:orders') },
-    { to: '/order-details',   label: 'Order Details',    show: can('view:order-details') },
-    { to: '/suppliers',       label: 'Suppliers',        show: can('view:suppliers') },
-    { to: '/purchase-orders', label: 'Purchase Orders',  show: can('view:purchase-orders') },
-    { to: '/inventory',       label: 'Inventory',        show: can('view:inventory') },
-    { to: '/users',           label: 'User Management',  show: isAdmin },
-    { to: '/home',            label: 'Customer View',    show: true },
+    { to: '/dashboard',       label: t.dashboard,        show: can('view:dashboard') },
+    { to: '/products',        label: t.products,         show: can('view:products') },
+    { to: '/categories',      label: t.categories,       show: can('view:categories') },
+    { to: '/customers',       label: t.customers,        show: can('view:customers') },
+    { to: '/orders',          label: t.orders,           show: can('view:orders') },
+    { to: '/order-details',   label: t.orderDetails,     show: can('view:order-details') },
+    { to: '/suppliers',       label: t.suppliers,        show: can('view:suppliers') },
+    { to: '/purchase-orders', label: t.purchaseOrders,   show: can('view:purchase-orders') },
+    { to: '/inventory',       label: t.inventory,        show: can('view:inventory') },
+    { to: '/users',           label: t.userManagement,   show: isAdmin },
+    { to: '/home',            label: t.customerView,     show: true },
   ];
 
   return (
@@ -61,15 +62,24 @@ function Sidebar() {
       </nav>
 
       <div className="px-4 py-4 border-t border-slate-200">
-        <p className="text-xs text-slate-500 mb-1">Logged in as</p>
+        <p className="text-xs text-slate-500 mb-1">{t.loggedInAs}</p>
         <p className="text-sm font-medium text-slate-700 truncate">{user?.emri} {user?.mbiemri}</p>
         <p className="text-xs text-slate-400 mb-3">{user?.roles?.join(', ')}</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+          <button
+            onClick={toggleLang}
+            className="text-xs font-bold px-2 py-1 rounded-md border border-slate-200 text-slate-500 hover:bg-slate-50"
+            title="Switch language"
+          >
+            {lang === 'sq' ? '🇦🇱 SQ' : '🇬🇧 EN'}
+          </button>
+        </div>
         <button
           onClick={logout}
           className="w-full text-sm text-red-600 hover:text-red-700 font-medium
                      px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-50 transition-colors"
         >
-          Sign out
+          {t.signOut}
         </button>
       </div>
     </aside>
