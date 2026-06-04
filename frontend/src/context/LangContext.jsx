@@ -10,6 +10,7 @@ const translations = {
     purchaseOrders: 'Porosi Blerje', inventory: 'Inventari',
     userManagement: 'Menaxhimi i Përdoruesve', customerView: 'Pamja e Klientit',
     loggedInAs: 'Hyrë si', signOut: 'Dil',
+    serviceRequests: 'Kërkesat e Servisit', productReviews: 'Vlerësimet e Produkteve',
 
     // ── Hero ──────────────────────────────────────────────────
     heroTagline: 'Teknologjia më e re, çmimi më i mirë',
@@ -33,6 +34,10 @@ const translations = {
     stockLabel: 'Gjendje', warrantyLabel: 'Garanci', brandLabel: 'Marka', modelLabel: 'Modeli',
     categoryLabel: 'Kategoria', descriptionLabel: 'Pershkrimi',
     addToCartFull: 'Shto në shportë', added: 'U shtua!', noPhoto: 'Pa foto',
+    reviewsTitle: 'Vlerësimet', leaveReview: 'Lër një vlerësim', yourRating: 'Vlerësimi juaj',
+    reviewPlaceholder: 'Shkruaj mendimin tënd...', submitReview: 'Dërgo vlerësimin',
+    reviewSuccess: 'Vlerësimi u shtua, faleminderit!', reviewError: 'Gabim gjatë dërgimit.',
+    reviewErrorStars: 'Zgjidh një vlerësim me yje.', noReviews: 'Nuk ka vlerësime akoma.',
 
     // ── Cart ──────────────────────────────────────────────────
     cartTitle: 'Shporta', continueShopping: '← Vazhdo blerjet', emptyCart: 'Shporta është bosh',
@@ -187,6 +192,7 @@ const translations = {
     purchaseOrders: 'Purchase Orders', inventory: 'Inventory',
     userManagement: 'User Management', customerView: 'Customer View',
     loggedInAs: 'Logged in as', signOut: 'Sign out',
+    serviceRequests: 'Service Requests', productReviews: 'Product Reviews',
 
     // ── Hero ──────────────────────────────────────────────────
     heroTagline: 'Latest technology, best price',
@@ -210,6 +216,10 @@ const translations = {
     stockLabel: 'Stock', warrantyLabel: 'Warranty', brandLabel: 'Brand', modelLabel: 'Model',
     categoryLabel: 'Category', descriptionLabel: 'Description',
     addToCartFull: 'Add to cart', added: 'Added!', noPhoto: 'No photo',
+    reviewsTitle: 'Reviews', leaveReview: 'Leave a review', yourRating: 'Your rating',
+    reviewPlaceholder: 'Write your opinion...', submitReview: 'Submit review',
+    reviewSuccess: 'Review submitted, thank you!', reviewError: 'Error submitting review.',
+    reviewErrorStars: 'Please select a star rating.', noReviews: 'No reviews yet.',
 
     // ── Cart ──────────────────────────────────────────────────
     cartTitle: 'Cart', continueShopping: '← Continue shopping', emptyCart: 'Your cart is empty',

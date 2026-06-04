@@ -20,6 +20,8 @@ import PurchaseOrders from './components/PurchaseOrders';
 import Inventory from './components/Inventory';
 import Dashboard from './pages/Dashboard';
 import UserManagement from './pages/UserManagement';
+import ServiceRequests from './components/ServiceRequests';
+import ProductReviews from './components/ProductReviews';
 
 const navClass = ({ isActive }) =>
   `flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
@@ -140,6 +142,16 @@ function StaffLayout() {
           <Route path="/users" element={
             <ProtectedRoute allowedRoles={['Admin']}>
               <UserManagement />
+            </ProtectedRoute>
+          } />
+          <Route path="/service-requests" element={
+            <ProtectedRoute allowedRoles={['Admin', 'Technician']}>
+              <ServiceRequests />
+            </ProtectedRoute>
+          } />
+          <Route path="/product-reviews" element={
+            <ProtectedRoute allowedRoles={['Admin']}>
+              <ProductReviews />
             </ProtectedRoute>
           } />
         </Routes>

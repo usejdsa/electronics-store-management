@@ -330,6 +330,119 @@ function ProductCard({ p, onSelect, onAddToCart }) {
   );
 }
 
+
+// ─── Product Reviews ─────────────────────────────────────────────────────────
+function ReviewsSection({ productId }) {
+  const { t } = useLang();
+  const { user } = useAuth();
+  const [reviews, setReviews] = useState([]);
+  const [form, setForm] = useState({ vleresimi: 0, komenti: '' });
+  const [hover, setHover] = useState(0);
+  const [submitting, setSubmitting] = useState(false);
+  const [success, setSuccess] = useState('');
+  const [error, setError] = useState('');
+
+  const fetchReviews = () => {
+    api.get(`/product-reviews/product/${productId}`).then(r => setReviews(r.data)).catch(console.error);
+  };
+
+  useEffect(() => { fetchReviews(); }, [productId]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!form.vleresimi) { setError(t.reviewErrorStars); return; }
+    setSubmitting(true); setError('');
+    try {
+      await api.post('/product-reviews', { produkti_id: productId, vleresimi: form.vleresimi, komenti: form.komenti });
+      setSuccess(t.reviewSuccess);
+      setForm({ vleresimi: 0, komenti: '' });
+      fetchReviews();
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (err) {
+      setError(err.response?.data?.message || t.reviewError);
+    } finally { setSubmitting(false); }
+  };
+
+  const avg = reviews.length ? (reviews.reduce((s, r) => s + r.vleresimi, 0) / reviews.length).toFixed(1) : null;
+
+  return (
+    <div style={{ maxWidth: 1000, margin: '0 auto', padding: '0 24px 48px' }}>
+      <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: 36 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 28 }}>
+          <h2 style={{ fontSize: 20, fontWeight: 800, color: '#0f172a', margin: 0 }}>{t.reviewsTitle}</h2>
+          {avg && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ fontSize: 24, fontWeight: 900, color: '#0f172a' }}>{avg}</span>
+              <span style={{ color: '#f59e0b', fontSize: 18 }}>{'★'.repeat(Math.round(avg))}{'☆'.repeat(5 - Math.round(avg))}</span>
+              <span style={{ fontSize: 13, color: '#94a3b8' }}>({reviews.length})</span>
+            </div>
+          )}
+        </div>
+
+        {/* Leave a review — only for customers */}
+        <div style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: 16, padding: 24, marginBottom: 28 }}>
+          <h3 style={{ fontSize: 15, fontWeight: 700, color: '#0f172a', margin: '0 0 16px' }}>{t.leaveReview}</h3>
+          {success && <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10, padding: '10px 14px', marginBottom: 12, color: '#15803d', fontSize: 13 }}>{success}</div>}
+          {error && <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 10, padding: '10px 14px', marginBottom: 12, color: '#dc2626', fontSize: 13 }}>{error}</div>}
+          <form onSubmit={handleSubmit}>
+            {/* Star picker */}
+            <div style={{ marginBottom: 14 }}>
+              <div style={{ fontSize: 13, fontWeight: 500, color: '#374151', marginBottom: 8 }}>{t.yourRating}</div>
+              <div style={{ display: 'flex', gap: 4 }}>
+                {[1,2,3,4,5].map(s => (
+                  <span
+                    key={s}
+                    onMouseEnter={() => setHover(s)}
+                    onMouseLeave={() => setHover(0)}
+                    onClick={() => setForm(f => ({ ...f, vleresimi: s }))}
+                    style={{ fontSize: 32, cursor: 'pointer', color: s <= (hover || form.vleresimi) ? '#f59e0b' : '#e2e8f0', transition: 'color 0.1s', lineHeight: 1 }}
+                  >★</span>
+                ))}
+              </div>
+            </div>
+            <textarea
+              value={form.komenti}
+              onChange={e => setForm(f => ({ ...f, komenti: e.target.value }))}
+              placeholder={t.reviewPlaceholder}
+              rows={3}
+              style={{ width: '100%', padding: '10px 14px', border: '1px solid #e2e8f0', borderRadius: 10, fontSize: 14, outline: 'none', resize: 'vertical', boxSizing: 'border-box', marginBottom: 12, background: '#f8fafc' }}
+            />
+            <button
+              type="submit"
+              disabled={submitting}
+              style={{ padding: '10px 24px', background: submitting ? '#a5b4fc' : 'linear-gradient(135deg,#4f46e5,#7c3aed)', border: 'none', borderRadius: 10, color: 'white', fontSize: 14, fontWeight: 600, cursor: submitting ? 'default' : 'pointer' }}
+            >
+              {submitting ? '...' : t.submitReview}
+            </button>
+          </form>
+        </div>
+
+        {/* Reviews list */}
+        {reviews.length === 0
+          ? <p style={{ color: '#94a3b8', fontSize: 14 }}>{t.noReviews}</p>
+          : <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {reviews.map(r => (
+                <div key={r.id} style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: 14, padding: '16px 20px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                    <div style={{ width: 34, height: 34, background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: 'white', flexShrink: 0 }}>
+                      {r.customer_emri?.[0]?.toUpperCase() || '?'}
+                    </div>
+                    <div>
+                      <div style={{ fontWeight: 600, fontSize: 14, color: '#0f172a' }}>{r.customer_emri || 'Klient'}</div>
+                      <div style={{ color: '#f59e0b', fontSize: 14, lineHeight: 1 }}>{'★'.repeat(r.vleresimi)}{'☆'.repeat(5 - r.vleresimi)}</div>
+                    </div>
+                    <div style={{ marginLeft: 'auto', fontSize: 12, color: '#94a3b8' }}>{new Date(r.data_vleresimit).toLocaleDateString()}</div>
+                  </div>
+                  {r.komenti && <p style={{ margin: 0, fontSize: 14, color: '#475569', lineHeight: 1.6 }}>{r.komenti}</p>}
+                </div>
+              ))}
+            </div>
+        }
+      </div>
+    </div>
+  );
+}
+
 // ─── Product Detail ───────────────────────────────────────────────────────────
 function ProductDetail({ productId, onBack, onAddToCart }) {
   const { t } = useLang();
@@ -366,6 +479,7 @@ function ProductDetail({ productId, onBack, onAddToCart }) {
   ].filter(Boolean);
 
   return (
+    <div>
     <section style={{ minHeight: '100vh', background: '#f8fafc', paddingTop: 80 }}>
       <div style={{ maxWidth: 1000, margin: '0 auto', padding: '32px 24px' }}>
         <button onClick={onBack} style={{ background: 'none', border: 'none', color: '#6366f1', cursor: 'pointer', fontSize: 14, fontWeight: 600, marginBottom: 24, display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -441,6 +555,8 @@ function ProductDetail({ productId, onBack, onAddToCart }) {
         </div>
       </div>
     </section>
+    <ReviewsSection productId={productId} />
+  </div>
   );
 }
 
